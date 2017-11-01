@@ -22,20 +22,18 @@ def generate_qgis_styles(mapbox_gl_style_path):
         print(l)
     print("----------------------")
 
-    try:
-        for l in js["layers"]:
-            if "source-layer" in l and l["type"] == "fill":
-                target_file_name = "{}.polygon.qml".format(l["source-layer"])
-                print("Create polygon style: {}".format(target_file_name))
-                if "filter" in l:
-                    filter_expr = get_qgis_rule(l["filter"])
-                    if filter_expr:
-                        filter_expr = escape(filter_expr, entities={'"': "&quot;"})
-                        print("'{}'  ==>  '{}'".format(l["filter"], filter_expr))
-    except RuntimeError:
-        print(sys.exc_info()[1])
-    except:
-        print("Error: {}, {}", sys.exc_info()[1], traceback.format_exc())
-        return None
-
-
+    styles = {}
+    for l in js["layers"]:
+        style = None
+        if "source-layer" in l and l["type"] == "fill":
+            name = l["source-layer"]
+            if name not in styles:
+                styles[name] = {"fills": []}
+            style = styles[name]
+            target_file_name = "{}.polygon.qml".format(l["source-layer"])
+            print("Create polygon style: {}".format(target_file_name))
+            if "filter" in l:
+                filter_expr = get_qgis_rule(l["filter"])
+                if filter_expr:
+                    filter_expr = escape(filter_expr, entities={'"': "&quot;"})
+                    print("'{}'  ==>  '{}'".format(l["filter"], filter_expr))

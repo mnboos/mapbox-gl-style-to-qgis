@@ -24,6 +24,90 @@ _existential_operators = {
     "!has": "is null"
 }
 
+"""
+ * the upper bound map scales by zoom level.
+ * E.g. a style for zoom level 14 shall be applied for map scales <= 50'000
+ * If the are more zoom levels applied, they need to be ascending.
+ * E.g. a second style will be applied for zoom level 15, that is map scale <= 25'000, the first style
+   for zoom level 14 will no longer be active.
+"""
+upper_bound_map_scales_by_zoom_level = {
+    0: 10000000000,
+    1: 1000000000,
+    2: 500000000,
+    3: 200000000,
+    4: 50000000,
+    5: 25000000,
+    6: 12500000,
+    7: 6500000,
+    8: 3000000,
+    9: 1500000,
+    10: 750000,
+    11: 400000,
+    12: 200000,
+    13: 100000,
+    14: 50000,
+    15: 25000,
+    16: 12500,
+    17: 5000,
+    18: 2500,
+    19: 1500,
+    20: 750,
+    21: 500,
+    22: 250,
+    23: 100
+}
+
+
+def get_qgis_fill(paint):
+    stops = paint["stops"]
+    fill = {
+        "fill_color_rules": get_fill_rules(paint, "fill-color"),
+        "outline_color": get_fill_rules(paint, "fill-outline-color"),
+        "outline_width": 0
+    }
+    if len(stops) > 1:
+        fill["outline_color"] = stops[1][1]
+        fill["outline_width"] = stops[1][0] - stops[0][0]
+    return fill
+
+
+def get_fill_rules(paint, fill_property):
+    color = _get_value_safe(paint, "fill-color")
+    stops = _get_value_safe(color, "stops")
+    if stops:
+        return _get_rules_for_stops(stops)
+    return [{"rule": None, "value": color}]
+
+
+def _get_rules_for_stops(stops):
+    rules = []
+    for s in stops:
+        zoom_level = int(s[0])
+        scale = upper_bound_map_scales_by_zoom_level[zoom_level]
+        rule = get_qgis_rule(["<=", "@map_scale", scale])
+        rules.append({"rule": rule, "value": s[1]})
+    return rules
+
+def get_outline_color(paint):
+    return _get_value_safe(paint, "fill-outline-color")
+
+def get_outline_width(paint):
+    stops = _get_value_safe(paint, "fill-color/stops")
+
+
+def _get_value_safe(value, path):
+    args = path.split("/")
+
+    result = value
+    for a in args:
+        if a not in result:
+            result = None
+            break
+        else:
+            result = result[a]
+    return result
+
 
 def get_qgis_rule(mb_filter):
     op = mb_filter[0]
@@ -57,7 +141,10 @@ def _get_comparision_expr(mb_filter):
     value = mb_filter[2]
     if attr == '$type':
         return None
-    return "\"{attr}\" {op} '{value}'".format(attr=attr, op=op, value=value)
+    attr_in_quotes = not attr.startswith("@")
+    if attr_in_quotes:
+        attr = "\"{}\"".format(attr)
+    return "{attr} {op} '{value}'".format(attr=attr, op=op, value=value)
 
 
 def _get_membership_expr(mb_filter):

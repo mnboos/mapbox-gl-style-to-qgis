@@ -7,6 +7,11 @@ from core.helper import get_qgis_rule
 
 #region comparision filters
 
+def test_qgis_attribute():
+    rule = get_qgis_rule(["<=", "@map_scale", "20000"])
+    assert rule == "(@map_scale <= '20000')"
+
+
 def test_eq_filter():
     rule = get_qgis_rule(["==", "class", "address"])
     assert rule == "(\"class\" = 'address')"
