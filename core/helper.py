@@ -60,12 +60,15 @@ upper_bound_map_scales_by_zoom_level = {
 }
 
 
-def get_styles(paint):
+def get_styles(paint, layer_id=None):
     base_style = {
         "zoom_level": None,
-        "min_scale": None,
-        "max_scale": None
+        "min_scale_denom": None,
+        "max_scale_denom": None
     }
+    if layer_id:
+        base_style["name"] = layer_id
+
     values_by_zoom = {}
 
     all_values = []
@@ -76,7 +79,7 @@ def get_styles(paint):
 
     for v in all_values:
         zoom = v["zoom_level"]
-        if not zoom:
+        if zoom is None:
             base_style[v["name"]] = v["value"]
         else:
             if zoom not in values_by_zoom:
@@ -103,26 +106,26 @@ def get_styles(paint):
                     if k not in next_style:
                         next_style[k] = s[k]
 
-    if len(resulting_styles) > 1:
-        resulting_styles = sorted(resulting_styles, key=lambda s: s["zoom_level"])
-        _apply_scale_range(resulting_styles)
+    resulting_styles = sorted(resulting_styles, key=lambda s: s["zoom_level"])
+    _apply_scale_range(resulting_styles)
+    # print "apply scales: ", resulting_styles
 
     return resulting_styles
 
 
 def _apply_scale_range(styles):
     for index, s in enumerate(styles):
-        if index == 0:
-            min_scale = 1000000000
-        else:
-            min_scale = upper_bound_map_scales_by_zoom_level[s["zoom_level"]]
+        if s["zoom_level"] is None:
+            continue
+
+        max_scale_denom = upper_bound_map_scales_by_zoom_level[s["zoom_level"]]
         if index == len(styles) - 1:
-            max_scale = 1
+            min_scale_denom = 1
         else:
             zoom_of_next = styles[index+1]["zoom_level"]
-            max_scale = upper_bound_map_scales_by_zoom_level[zoom_of_next]
-        s["min_scale"] = min_scale
-        s["max_scale"] = max_scale
+            min_scale_denom = upper_bound_map_scales_by_zoom_level[zoom_of_next]
+        s["min_scale_denom"] = min_scale_denom
+        s["max_scale_denom"] = max_scale_denom
 
 
 def get_properties_by_zoom(paint, fill_property):
@@ -157,7 +160,7 @@ def _get_rules_for_stops(stops):
 
 def _get_value_safe(value, path):
     result = None
-    if path and path in value:
+    if value and isinstance(value, dict) and path and path in value:
         result = value[path]
     return result
 
