@@ -17,12 +17,6 @@ def generate_qgis_styles(mapbox_gl_style_path, output_directory):
     for l in js["layers"]:
         if "source-layer" in l:
             all_layers.add(l["source-layer"])
-    all_layers = list(sorted(all_layers))
-    # print("all layers")
-    # print("----------------------")
-    # for l in all_layers:
-    #     print(l)
-    # print("----------------------")
 
     styles_by_target_layer = {}
     for l in js["layers"]:
@@ -30,7 +24,8 @@ def generate_qgis_styles(mapbox_gl_style_path, output_directory):
             name = l["source-layer"]
             if name not in styles_by_target_layer:
                 styles_by_target_layer[name] = {
-                    "file_name": "{}.polygon.qml".format(l["source-layer"])
+                    "file_name": "{}.polygon.qml".format(l["source-layer"]),
+                    "styles": []
                 }
             qgis_styles = get_styles(l["paint"], l["id"])
             # target_file_name =
@@ -44,7 +39,7 @@ def generate_qgis_styles(mapbox_gl_style_path, output_directory):
             for s in qgis_styles:
                 s["rule"] = filter_expr
 
-            styles_by_target_layer[name]["styles"] = qgis_styles
+            styles_by_target_layer[name]["styles"].extend(qgis_styles)
     # print styles_by_target_layer
     for layer_name in styles_by_target_layer:
         style = styles_by_target_layer[layer_name]

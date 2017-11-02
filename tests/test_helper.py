@@ -5,22 +5,24 @@ def test_zoom_level_zero():
     paint = {
         "fill-opacity": {
           "base": 1,
-          "stops": [
-            [
-              0,
-              0.9
-            ],
-            [
-              10,
-              0.3
-            ]
-          ]
+          "stops": [[0, 0.9], [10, 0.3]]
         }
       }
-    style = get_styles(paint)
-    print style
-    assert False
+    styles = get_styles(paint)
+    assert len(styles) == 2
+    assert styles[0] == {
+        'zoom_level': 0,
+        'min_scale_denom': 750000,
+        'max_scale_denom': 10000000000L,
+        'fill-opacity': 0.9
+    }
 
+    assert styles[1] == {
+        'min_scale_denom': 1,
+        'zoom_level': 10,
+        'max_scale_denom': 750000,
+        'fill-opacity': 0.3
+    }
 
 # def test_get_styles_float():
 #     paint = {
