@@ -44,14 +44,15 @@ def _get_fill_symbol(index, style):
                 <prop k="joinstyle" v="bevel"/>
                 <prop k="offset" v="{offset}"/>
                 <prop k="offset_map_unit_scale" v="0,0,0,0,0,0"/>
-                <prop k="offset_unit" v="MM"/>
+                <prop k="offset_unit" v="MapUnit"/>
                 <prop k="outline_color" v="195,181,170,255"/>
                 <prop k="outline_style" v="solid"/>
                 <prop k="outline_width" v="0.1"/>
                 <prop k="outline_width_unit" v="MM"/>
                 <prop k="style" v="solid"/>
             </layer>
-        </symbol>""".format(opacity=opacity,
+        </symbol>
+        """.format(opacity=opacity,
                    index=index,
                    fill_color=fill_color_rgba,
                    offset=offset)
