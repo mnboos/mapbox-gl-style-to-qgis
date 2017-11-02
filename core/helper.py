@@ -1,3 +1,4 @@
+import copy
 
 _comparision_operators = {
     "==": "=",
@@ -59,25 +60,80 @@ upper_bound_map_scales_by_zoom_level = {
 }
 
 
-def get_qgis_fill(paint):
-    stops = paint["stops"]
-    fill = {
-        "fill_color_rules": get_fill_rules(paint, "fill-color"),
-        "outline_color": get_fill_rules(paint, "fill-outline-color"),
-        "outline_width": 0
+def get_styles(paint):
+    base_style = {
+        "zoom_level": None,
+        "min_scale": None,
+        "max_scale": None
     }
-    if len(stops) > 1:
-        fill["outline_color"] = stops[1][1]
-        fill["outline_width"] = stops[1][0] - stops[0][0]
-    return fill
+    values_by_zoom = {}
+
+    all_values = []
+    all_values.extend(get_properties_by_zoom(paint, "fill-color"))
+    all_values.extend(get_properties_by_zoom(paint, "fill-outline-color"))
+    all_values.extend(get_properties_by_zoom(paint, "fill-translate"))
+    all_values.extend(get_properties_by_zoom(paint, "fill-opacity"))
+
+    for v in all_values:
+        zoom = v["zoom_level"]
+        if not zoom:
+            base_style[v["name"]] = v["value"]
+        else:
+            if zoom not in values_by_zoom:
+                values_by_zoom[zoom] = []
+            values_by_zoom[zoom].append(v)
+
+    resulting_styles = []
+    if not values_by_zoom:
+        resulting_styles.append(base_style)
+    else:
+        for zoom in values_by_zoom:
+            values = values_by_zoom[zoom]
+            clone = copy.deepcopy(base_style)
+            clone["zoom_level"] = zoom
+            for v in values:
+                clone[v["name"]] = v["value"]
+            resulting_styles.append(clone)
+    if len(resulting_styles) > 1:
+        resulting_styles = sorted(resulting_styles, key=lambda s: s["zoom_level"])
+        _apply_scale_range(resulting_styles)
+
+    return resulting_styles
 
 
-def get_fill_rules(paint, fill_property):
-    color = _get_value_safe(paint, "fill-color")
-    stops = _get_value_safe(color, "stops")
+def _apply_scale_range(styles):
+    for index, s in enumerate(styles):
+        if index == 0:
+            min_scale = 1000000000
+        else:
+            min_scale = upper_bound_map_scales_by_zoom_level[s["zoom_level"]]
+        if index == len(styles) - 1:
+            max_scale = 1
+        else:
+            zoom_of_next = styles[index+1]["zoom_level"]
+            max_scale = upper_bound_map_scales_by_zoom_level[zoom_of_next]
+        s["min_scale"] = min_scale
+        s["max_scale"] = max_scale
+
+
+def get_properties_by_zoom(paint, fill_property):
+    value = _get_value_safe(paint, fill_property)
+    stops = None
+    if value:
+        stops = _get_value_safe(value, "stops")
+    properties = []
     if stops:
-        return _get_rules_for_stops(stops)
-    return [{"rule": None, "value": color}]
+        for s in stops:
+            properties.append({
+                "name": fill_property,
+                "zoom_level": int(s[0]),
+                "value": s[1]})
+    elif value:
+        properties.append({
+            "name": fill_property,
+            "zoom_level": None,
+            "value": value})
+    return properties
 
 
 def _get_rules_for_stops(stops):
@@ -89,23 +145,11 @@ def _get_rules_for_stops(stops):
         rules.append({"rule": rule, "value": s[1]})
     return rules
 
-def get_outline_color(paint):
-    return _get_value_safe(paint, "fill-outline-color")
-
-def get_outline_width(paint):
-    stops = _get_value_safe(paint, "fill-color/stops")
-
 
 def _get_value_safe(value, path):
-    args = path.split("/")
-
-    result = value
-    for a in args:
-        if a not in result:
-            result = None
-            break
-        else:
-            result = result[a]
+    result = None
+    if path and path in value:
+        result = value[path]
     return result
 
 
