@@ -48,7 +48,7 @@ def _get_fill_symbol(index, style):
                 <prop k="outline_color" v="195,181,170,255"/>
                 <prop k="outline_style" v="solid"/>
                 <prop k="outline_width" v="0.1"/>
-                <prop k="outline_width_unit" v="MM"/>
+                <prop k="outline_width_unit" v="MapUnit"/>
                 <prop k="style" v="solid"/>
             </layer>
         </symbol>
