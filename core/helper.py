@@ -87,13 +87,22 @@ def get_styles(paint):
     if not values_by_zoom:
         resulting_styles.append(base_style)
     else:
-        for zoom in values_by_zoom:
+        clone = base_style
+        for zoom in sorted(values_by_zoom.keys()):
             values = values_by_zoom[zoom]
-            clone = copy.deepcopy(base_style)
+            clone = copy.deepcopy(clone)
             clone["zoom_level"] = zoom
             for v in values:
                 clone[v["name"]] = v["value"]
             resulting_styles.append(clone)
+        styles_backwards = list(reversed(resulting_styles))
+        for index, s in enumerate(styles_backwards):
+            if index < len(resulting_styles)-1:
+                next_style = styles_backwards[index+1]
+                for k in s:
+                    if k not in next_style:
+                        next_style[k] = s[k]
+
     if len(resulting_styles) > 1:
         resulting_styles = sorted(resulting_styles, key=lambda s: s["zoom_level"])
         _apply_scale_range(resulting_styles)
