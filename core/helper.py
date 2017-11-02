@@ -1,4 +1,6 @@
 import copy
+import colorsys
+
 
 _comparision_operators = {
     "==": "=",
@@ -72,8 +74,8 @@ def get_styles(paint, layer_id=None):
     values_by_zoom = {}
 
     all_values = []
-    all_values.extend(get_properties_by_zoom(paint, "fill-color"))
-    all_values.extend(get_properties_by_zoom(paint, "fill-outline-color"))
+    all_values.extend(get_properties_by_zoom(paint, "fill-color", is_color=True))
+    all_values.extend(get_properties_by_zoom(paint, "fill-outline-color", is_color=True))
     all_values.extend(get_properties_by_zoom(paint, "fill-translate"))
     all_values.extend(get_properties_by_zoom(paint, "fill-opacity"))
 
@@ -113,6 +115,29 @@ def get_styles(paint, layer_id=None):
     return resulting_styles
 
 
+def parse_color(color):
+    if color.startswith("#"):
+        color = color.replace("#", "")
+        if len(color) == 3:
+            color = "".join(map(lambda c: c+c, color))
+        elif len(color) == 6:
+            return "#" + color
+        return ",".join(map(lambda v: str(int(v)), bytearray.fromhex(color)))
+    if color.startswith("hsla(") or color.startswith("hsl("):
+        has_alpha = color.startswith("hsla(")
+        colors = color.replace("hsla(", "").replace("hsl(", "")\
+            .replace(")", "").replace(" ", "").replace("%", "").split(",")
+        colors = map(lambda c: float(c), colors)
+        h = colors[0] / 360.0
+        s = colors[1] / 100.0
+        l = colors[2] / 100.0
+        a = 1
+        if has_alpha:
+            a = colors[3]
+        r, g, b = colorsys.hls_to_rgb(h, l, s)
+        return ",".join(map(lambda c: str(int(round(255.0*c))), [r, g, b, a]))
+
+
 def _apply_scale_range(styles):
     for index, s in enumerate(styles):
         if s["zoom_level"] is None:
@@ -128,7 +153,7 @@ def _apply_scale_range(styles):
         s["max_scale_denom"] = max_scale_denom
 
 
-def get_properties_by_zoom(paint, fill_property):
+def get_properties_by_zoom(paint, fill_property, is_color=False):
     value = _get_value_safe(paint, fill_property)
     stops = None
     if value:
@@ -136,11 +161,16 @@ def get_properties_by_zoom(paint, fill_property):
     properties = []
     if stops:
         for s in stops:
+            value = s[1]
+            if is_color:
+                value = parse_color(value)
             properties.append({
                 "name": fill_property,
                 "zoom_level": int(s[0]),
-                "value": s[1]})
+                "value": value})
     elif value:
+        if is_color:
+            value = parse_color(value)
         properties.append({
             "name": fill_property,
             "zoom_level": None,

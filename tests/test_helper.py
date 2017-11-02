@@ -1,4 +1,29 @@
-from core.helper import get_styles
+from core.helper import get_styles, parse_color
+
+
+def test_parse_hsl():
+    rgba = parse_color("hsl(28, 76%, 67%)")
+    assert rgba == "235,167,107,255"
+
+
+def test_parse_hsla():
+    rgba = parse_color("hsla(28, 76%, 67%, 0.5)")
+    assert rgba == "235,167,107,128"
+
+
+def test_parse_hex_alpha():
+    rgba = parse_color("#ffff0c32")
+    assert rgba == "255,255,12,50"
+
+
+def test_parse_hex():
+    rgba = parse_color("#ffff0c")
+    assert rgba == "#ffff0c"
+
+
+def test_parse_short_hex():
+    rgba = parse_color("#abc")
+    assert rgba == "170,187,204"
 
 
 def test_zoom_level_zero():

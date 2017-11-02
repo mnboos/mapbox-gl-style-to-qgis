@@ -63,9 +63,12 @@ def _get_rule(index, style):
     rule_key = str(uuid.uuid4())
     max_denom = ""
     min_denom = ""
+    rule_filter = ""
     label = style["name"]
     if style["zoom_level"]:
         label = "{}-zoom-{}".format(label, style["zoom_level"])
+    if style["rule"]:
+        rule_filter = 'filter="{}"'.format(style["rule"])
 
     max_denom_value = _get_value_safe(style, "max_scale_denom")
     min_denom_value = _get_value_safe(style, "min_scale_denom")
@@ -81,12 +84,13 @@ def _get_rule(index, style):
     if min_denom_value:
         min_denom = ' scalemindenom="{}"'.format(min_denom_value)
 
-    rule = """<rule key="{rule_key}" symbol="{symbol}"{max_denom}{min_denom} label="{label}"/>""".format(
+    rule = """<rule key="{rule_key}" {filter} symbol="{symbol}"{max_denom}{min_denom} label="{label}"/>""".format(
         max_denom=max_denom,
         min_denom=min_denom,
         rule_key=rule_key,
         symbol=index,
-        label=label)
+        label=label,
+        filter=rule_filter)
     return rule
 
 
