@@ -1,18 +1,21 @@
 import os
 import uuid
-import ast
 
 
 def create_style_file(output_directory, layer_style):
-    with open(os.path.join(__file__, "../templates/polygon_template.xml"), 'r') as f:
+    with open(os.path.join(__file__, "../templates/qml_template.xml"), 'r') as f:
         template = f.read()
 
+    geo_type = layer_style["geo_type"]
     rules = []
     symbols = []
 
     for index, s in enumerate(layer_style["styles"]):
         rules.append(_get_rule(index, s))
-        symbols.append(_get_fill_symbol(index, s))
+        if geo_type == 1:
+            symbols.append(_get_line_symbol(index, s))
+        elif geo_type == 2:
+            symbols.append(_get_fill_symbol(index, s))
 
     rule_string = """<rules key="{key}">
     {rules}
@@ -22,7 +25,9 @@ def create_style_file(output_directory, layer_style):
     {symbols}
     </symbols>""".format(symbols="\n".join(symbols))
 
-    template = template.format(rules=rule_string, symbols=symbol_string)
+    template = template.format(rules=rule_string,
+                               symbols=symbol_string,
+                               geo_type=geo_type)
     file_path = os.path.join(output_directory, layer_style["file_name"])
     if not os.path.isdir(output_directory):
         os.mkdir(output_directory)
@@ -36,8 +41,14 @@ def _get_fill_symbol(index, style):
     offset = map(lambda o: str(o), _get_value_safe(style, "fill-translate", default=[0, 0]))
     offset = ",".join(offset)
     fill_color_rgba = _get_value_safe(style, "fill-color", "")
+    fill_outline_color_rgba = _get_value_safe(style, "fill-outline-color", fill_color_rgba)
+    label = style["name"]
+    if style["zoom_level"]:
+        label = "{}-zoom-{}".format(label, style["zoom_level"])
 
-    symbol = """<symbol alpha="{opacity}" clip_to_extent="1" type="fill" name="{index}">
+    symbol = """
+    <!-- {label} -->
+    <symbol alpha="{opacity}" clip_to_extent="1" type="fill" name="{index}">
             <layer pass="0" class="SimpleFill" locked="0">
                 <prop k="border_width_map_unit_scale" v="0,0,0,0,0,0"/>
                 <prop k="color" v="{fill_color}"/>
@@ -45,9 +56,9 @@ def _get_fill_symbol(index, style):
                 <prop k="offset" v="{offset}"/>
                 <prop k="offset_map_unit_scale" v="0,0,0,0,0,0"/>
                 <prop k="offset_unit" v="MapUnit"/>
-                <prop k="outline_color" v="195,181,170,255"/>
+                <prop k="outline_color" v="{fill_outline_color}"/>
                 <prop k="outline_style" v="solid"/>
-                <prop k="outline_width" v="0.1"/>
+                <prop k="outline_width" v="0.7"/>
                 <prop k="outline_width_unit" v="MapUnit"/>
                 <prop k="style" v="solid"/>
             </layer>
@@ -55,7 +66,44 @@ def _get_fill_symbol(index, style):
         """.format(opacity=opacity,
                    index=index,
                    fill_color=fill_color_rgba,
-                   offset=offset)
+                   fill_outline_color=fill_outline_color_rgba,
+                   offset=offset,
+                   label=label)
+    return symbol
+
+
+def _get_line_symbol(index, style):
+    color = _get_value_safe(style, "line-color")
+    width = _get_value_safe(style, "line-width")
+    capstyle = _get_value_safe(style, "line-cap")
+    joinstyle = _get_value_safe(style, "line-join")
+    opacity = _get_value_safe(style, "line-join", 1)
+
+    symbol = """<symbol alpha="{opacity}" clip_to_extent="1" type="line" name="{index}">
+        <layer pass="0" class="SimpleLine" locked="0">
+          <prop k="capstyle" v="{capstyle}"/>
+          <prop k="customdash" v="5;2"/>
+          <prop k="customdash_map_unit_scale" v="0,0,0,0,0,0"/>
+          <prop k="customdash_unit" v="Pixel"/>
+          <prop k="draw_inside_polygon" v="0"/>
+          <prop k="joinstyle" v="{joinstyle}"/>
+          <prop k="line_color" v="{line_color}"/>
+          <prop k="line_style" v="solid"/>
+          <prop k="line_width" v="{line_width}"/>
+          <prop k="line_width_unit" v="Pixel"/>
+          <prop k="offset" v="0"/>
+          <prop k="offset_map_unit_scale" v="0,0,0,0,0,0"/>
+          <prop k="offset_unit" v="MapUnit"/>
+          <prop k="use_custom_dash" v="0"/>
+          <prop k="width_map_unit_scale" v="0,0,0,0,0,0"/>
+        </layer>
+      </symbol>
+      """.format(index=index,
+                 opacity=opacity,
+                 line_color=color,
+                 line_width=width,
+                 capstyle=capstyle,
+                 joinstyle=joinstyle)
     return symbol
 
 

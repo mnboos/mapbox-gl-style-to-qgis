@@ -121,5 +121,5 @@ def my_form_open(dialog, layer, feature):
     <default field="_id" expression=""/>
   </defaults>
   <previewExpression></previewExpression>
-  <layerGeometryType>2</layerGeometryType>
+  <layerGeometryType>{geo_type}</layerGeometryType>
 </qgis>

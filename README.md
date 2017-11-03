@@ -1,5 +1,5 @@
 ## Fill-Styles (for Polygons)
-The following properties have to be respected:
+The following properties are implemented:
 
 Mapbox | QGIS UI | QML
 --- | --- | ---
@@ -23,3 +23,13 @@ property.
 
 
 
+## Line-Styles
+The following properties are implemented:
+
+Mapbox | QGIS UI | QML | QGIS Default
+--- | --- | --- | ---
+line-join | Join Style | joinstyle | bevel
+line-cap | Cap Style | capstyle | square
+line-width | Pen Width | line_width
+line-color | Color | line_color
+line-opacity | | alpha of line_color

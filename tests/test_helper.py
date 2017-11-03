@@ -37,13 +37,13 @@ def test_parse_short_hex():
 
 
 def test_zoom_level_zero():
-    paint = {
+    style = _get_style({
         "fill-opacity": {
           "base": 1,
           "stops": [[0, 0.9], [10, 0.3]]
         }
-      }
-    styles = get_styles(paint)
+      })
+    styles = get_styles(style)
     assert len(styles) == 2
     assert styles[0] == {
         'zoom_level': 0,
@@ -59,12 +59,13 @@ def test_zoom_level_zero():
         'fill-opacity': 0.3
     }
 
+
 def test_get_styles_float():
-    paint = {
+    style = _get_style({
         "fill-opacity": 0.7,
         "fill-color": "#f2eae2",
-    }
-    styles = get_styles(paint)
+    })
+    styles = get_styles(style)
     print styles
     assert styles[0] == {
         "fill-color": "#f2eae2",
@@ -76,11 +77,11 @@ def test_get_styles_float():
 
 
 def test_get_styles_simple():
-    paint = {
+    style = _get_style({
         "fill-outline-color": "#dfdbd7",
         "fill-color": "#f2eae2",
-    }
-    styles = get_styles(paint)
+    })
+    styles = get_styles(style)
     assert len(styles) == 1
     assert styles[0] == {
         "fill-outline-color": "#dfdbd7",
@@ -92,7 +93,7 @@ def test_get_styles_simple():
 
 
 def test_get_styles():
-    paint = {
+    style = _get_style({
         "fill-outline-color": "#dfdbd7",
         "fill-color": "#f2eae2",
         "fill-opacity": {
@@ -108,8 +109,8 @@ def test_get_styles():
             ]
           ]
         }
-      }
-    styles = get_styles(paint)
+      })
+    styles = get_styles(style)
     assert len(styles) == 2
     styles = sorted(styles, key=lambda s: s["zoom_level"])
     assert _are_dicts_equal(styles[0], {
@@ -141,3 +142,10 @@ def _are_dicts_equal(d1, d2):
         if d1[k] != d2[k]:
             raise AssertionError("Key '{}' not equal: {} != {}".format(k, d1[k], d2[k]))
     return True
+
+def _get_style(paint):
+    return {
+        "id": None,
+        "type": "fill",
+        "paint": paint
+    }

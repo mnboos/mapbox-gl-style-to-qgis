@@ -53,12 +53,12 @@ def test_lt_filter():
 
 def test_membership_in():
     expr = get_qgis_rule(["in", "class", "city", "cafe", "poi"])
-    assert expr == "(\"class\" in ('city', 'cafe', 'poi'))"
+    assert expr == "(\"class\" is not null and \"class\" in ('city', 'cafe', 'poi'))"
 
 
 def test_membership_not_in():
     expr = get_qgis_rule(["!in", "class", "city", "cafe", "poi"])
-    assert expr == "(\"class\" not in ('city', 'cafe', 'poi'))"
+    assert expr == "(\"class\" is null or \"class\" not in ('city', 'cafe', 'poi'))"
 # endregion
 
 # region existential filters

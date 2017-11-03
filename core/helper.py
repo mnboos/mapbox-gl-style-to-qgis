@@ -62,7 +62,11 @@ upper_bound_map_scales_by_zoom_level = {
 }
 
 
-def get_styles(paint, layer_id=None):
+def get_styles(layer):
+    layer_id = layer["id"]
+    paint = layer["paint"]
+    layer_type = layer["type"]
+
     base_style = {
         "zoom_level": None,
         "min_scale_denom": None,
@@ -74,10 +78,17 @@ def get_styles(paint, layer_id=None):
     values_by_zoom = {}
 
     all_values = []
-    all_values.extend(get_properties_by_zoom(paint, "fill-color", is_color=True))
-    all_values.extend(get_properties_by_zoom(paint, "fill-outline-color", is_color=True))
-    all_values.extend(get_properties_by_zoom(paint, "fill-translate"))
-    all_values.extend(get_properties_by_zoom(paint, "fill-opacity"))
+    if layer_type == "fill":
+        all_values.extend(get_properties_by_zoom(paint, "fill-color", is_color=True))
+        all_values.extend(get_properties_by_zoom(paint, "fill-outline-color", is_color=True))
+        all_values.extend(get_properties_by_zoom(paint, "fill-translate"))
+        all_values.extend(get_properties_by_zoom(paint, "fill-opacity"))
+    elif layer_type == "line":
+        all_values.extend(get_properties_by_zoom(paint, "line-join"))
+        all_values.extend(get_properties_by_zoom(paint, "line-cap"))
+        all_values.extend(get_properties_by_zoom(paint, "line-width"))
+        all_values.extend(get_properties_by_zoom(paint, "line-color", is_color=True))
+        all_values.extend(get_properties_by_zoom(paint, "line-opacity"))
 
     for v in all_values:
         zoom = v["zoom_level"]
@@ -252,7 +263,12 @@ def _get_membership_expr(mb_filter):
     what = "\"{}\"".format(mb_filter[1])
     op = _membership_operators[mb_filter[0]]
     collection = "({})".format(", ".join(map(lambda e: "'{}'".format(e), mb_filter[2:])))
-    return "{what} {op} {coll}".format(what=what, op=op, coll=collection)
+    is_not = mb_filter[0].startswith("!")
+    if is_not:
+        null_str = "is null or"
+    else:
+        null_str = "is not null and"
+    return "{what} {null} {what} {op} {coll}".format(what=what, op=op, coll=collection, null=null_str)
 
 
 def _get_existential_expr(mb_filter):
