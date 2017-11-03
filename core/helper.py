@@ -89,6 +89,7 @@ def get_styles(layer):
         all_values.extend(get_properties_by_zoom(paint, "line-width"))
         all_values.extend(get_properties_by_zoom(paint, "line-color", is_color=True))
         all_values.extend(get_properties_by_zoom(paint, "line-opacity"))
+        all_values.extend(get_properties_by_zoom(paint, "line-dasharray"))
 
     for v in all_values:
         zoom = v["zoom_level"]
