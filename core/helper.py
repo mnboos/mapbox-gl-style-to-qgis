@@ -64,7 +64,9 @@ upper_bound_map_scales_by_zoom_level = {
 
 def get_styles(layer):
     layer_id = layer["id"]
-    paint = layer["paint"]
+    if "type" not in layer:
+        raise RuntimeError("'type' not set on layer")
+
     layer_type = layer["type"]
 
     base_style = {
@@ -79,17 +81,17 @@ def get_styles(layer):
 
     all_values = []
     if layer_type == "fill":
-        all_values.extend(get_properties_by_zoom(paint, "fill-color", is_color=True))
-        all_values.extend(get_properties_by_zoom(paint, "fill-outline-color", is_color=True))
-        all_values.extend(get_properties_by_zoom(paint, "fill-translate"))
-        all_values.extend(get_properties_by_zoom(paint, "fill-opacity"))
+        all_values.extend(get_properties_by_zoom(layer, "paint/fill-color", is_color=True))
+        all_values.extend(get_properties_by_zoom(layer, "paint/fill-outline-color", is_color=True))
+        all_values.extend(get_properties_by_zoom(layer, "paint/fill-translate"))
+        all_values.extend(get_properties_by_zoom(layer, "paint/fill-opacity"))
     elif layer_type == "line":
-        all_values.extend(get_properties_by_zoom(paint, "line-join"))
-        all_values.extend(get_properties_by_zoom(paint, "line-cap"))
-        all_values.extend(get_properties_by_zoom(paint, "line-width"))
-        all_values.extend(get_properties_by_zoom(paint, "line-color", is_color=True))
-        all_values.extend(get_properties_by_zoom(paint, "line-opacity"))
-        all_values.extend(get_properties_by_zoom(paint, "line-dasharray"))
+        all_values.extend(get_properties_by_zoom(layer, "layout/line-join"))
+        all_values.extend(get_properties_by_zoom(layer, "layout/line-cap"))
+        all_values.extend(get_properties_by_zoom(layer, "paint/line-width"))
+        all_values.extend(get_properties_by_zoom(layer, "paint/line-color", is_color=True))
+        all_values.extend(get_properties_by_zoom(layer, "paint/line-opacity"))
+        all_values.extend(get_properties_by_zoom(layer, "paint/line-dasharray"))
 
     for v in all_values:
         zoom = v["zoom_level"]
@@ -178,8 +180,12 @@ def _apply_scale_range(styles):
         s["max_scale_denom"] = max_scale_denom
 
 
-def get_properties_by_zoom(paint, fill_property, is_color=False):
-    value = _get_value_safe(paint, fill_property)
+def get_properties_by_zoom(paint, property_path, is_color=False):
+    parts = property_path.split("/")
+    value = paint
+    for p in parts:
+        value = _get_value_safe(value, p)
+
     stops = None
     if value:
         stops = _get_value_safe(value, "stops")
@@ -190,14 +196,14 @@ def get_properties_by_zoom(paint, fill_property, is_color=False):
             if is_color:
                 value = parse_color(value)
             properties.append({
-                "name": fill_property,
+                "name": parts[-1],
                 "zoom_level": int(s[0]),
                 "value": value})
     elif value:
         if is_color:
             value = parse_color(value)
         properties.append({
-            "name": fill_property,
+            "name": parts[-1],
             "zoom_level": None,
             "value": value})
     return properties

@@ -60,6 +60,21 @@ def test_line_dasharray():
     styles = get_styles(style)
 
 
+def test_line_cap():
+    style = {
+        "id": None,
+        "type": "line",
+        "layout": {
+            "line-cap": "round",
+            "line-join": "square"
+        }
+    }
+    styles = get_styles(style)
+    assert len(styles) == 1
+    assert styles[0]["line-join"] == "square"
+    assert styles[0]["line-cap"] == "round"
+
+
 def test_zoom_level_zero():
     style = _get_fill_style({
         "fill-opacity": {
