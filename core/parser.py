@@ -7,7 +7,7 @@ from helper import get_qgis_rule, get_styles
 from xml_helper import create_style_file
 
 
-def generate_qgis_styles(mapbox_gl_style_path, output_directory):
+def generate_qgis_styles(mapbox_gl_style_path):
     if not os.path.isfile(mapbox_gl_style_path):
         raise RuntimeError("File does not exist: {}".format(mapbox_gl_style_path))
     with open(mapbox_gl_style_path, 'r') as f:
@@ -51,7 +51,18 @@ def generate_qgis_styles(mapbox_gl_style_path, output_directory):
                 s["rule"] = filter_expr
 
             styles_by_target_layer[source_layer]["styles"].extend(qgis_styles)
-    # print styles_by_target_layer
+
+    for layer_name in styles_by_target_layer:
+        styles = styles_by_target_layer[layer_name]["styles"]
+        for index, style in enumerate(styles):
+            rule = style["rule"]
+            zoom = style["zoom_level"]
+            styles_with_same_target = filter(lambda s: s["rule"] == rule and s["zoom_level"] == zoom, styles[:index])
+            style["rendering_pass"] = len(styles_with_same_target)
+    return styles_by_target_layer
+
+
+def write_styles(styles_by_target_layer, output_directory):
     for layer_name in styles_by_target_layer:
         style = styles_by_target_layer[layer_name]
         create_style_file(output_directory=output_directory, layer_style=style)

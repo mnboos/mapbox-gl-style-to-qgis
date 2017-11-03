@@ -11,4 +11,5 @@ def test_generate():
     output_directory = os.path.join(os.path.dirname(__file__), "generated")
     if os.path.isdir(output_directory):
         shutil.rmtree(output_directory)
-    parser.generate_qgis_styles(mapbox_gl_style_path=path, output_directory=output_directory)
+    styles = parser.generate_qgis_styles(mapbox_gl_style_path=path)
+    parser.write_styles(styles, output_directory)

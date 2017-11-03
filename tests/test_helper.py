@@ -58,7 +58,6 @@ def test_line_dasharray():
         }
       })
     styles = get_styles(style)
-    assert styles == ""
 
 
 def test_zoom_level_zero():

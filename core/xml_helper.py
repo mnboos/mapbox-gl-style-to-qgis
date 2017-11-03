@@ -2,6 +2,19 @@ import os
 import uuid
 
 
+_qgis_join_styles = {
+    "bevel": "bevel",
+    "round": "round",
+    "miter": "miter"
+}
+
+_qgis_cap_styles = {
+    "butt": "flat",
+    "square": "square",
+    "round": "round"
+}
+
+
 def create_style_file(output_directory, layer_style):
     with open(os.path.join(__file__, "../templates/qml_template.xml"), 'r') as f:
         template = f.read()
@@ -48,7 +61,7 @@ def _get_fill_symbol(index, style):
 
     symbol = """<!-- {label} -->
     <symbol alpha="{opacity}" clip_to_extent="1" type="fill" name="{index}">
-            <layer pass="0" class="SimpleFill" locked="0">
+            <layer pass="{rendering_pass}" class="SimpleFill" locked="0">
                 <prop k="border_width_map_unit_scale" v="0,0,0,0,0,0"/>
                 <prop k="color" v="{fill_color}"/>
                 <prop k="joinstyle" v="bevel"/>
@@ -67,15 +80,16 @@ def _get_fill_symbol(index, style):
                    fill_color=fill_color_rgba,
                    fill_outline_color=fill_outline_color_rgba,
                    offset=offset,
-                   label=label)
+                   label=label,
+                   rendering_pass=style["rendering_pass"])
     return symbol
 
 
 def _get_line_symbol(index, style):
     color = _get_value_safe(style, "line-color")
     width = _get_value_safe(style, "line-width", 1)
-    capstyle = _get_value_safe(style, "line-cap")
-    joinstyle = _get_value_safe(style, "line-join")
+    capstyle = _qgis_cap_styles[_get_value_safe(style, "line-cap", "square")]
+    joinstyle = _qgis_join_styles[_get_value_safe(style, "line-join", "bevel")]
     opacity = _get_value_safe(style, "line-join", 1)
     dashes = _get_value_safe(style, "line-dasharray", None)
     dash_string = ""
@@ -87,10 +101,9 @@ def _get_line_symbol(index, style):
     label = style["name"]
     if style["zoom_level"]:
         label = "{}-zoom-{}".format(label, style["zoom_level"])
-
     symbol = """<!-- {label} -->
     <symbol alpha="{opacity}" clip_to_extent="1" type="line" name="{index}">
-        <layer pass="0" class="SimpleLine" locked="0">
+        <layer pass="{rendering_pass}" class="SimpleLine" locked="0">
           <prop k="capstyle" v="{capstyle}"/>
           <prop k="customdash" v="{custom_dash}"/>
           <prop k="customdash_map_unit_scale" v="0,0,0,0,0,0"/>
@@ -116,7 +129,8 @@ def _get_line_symbol(index, style):
                  joinstyle=joinstyle,
                  use_custom_dash=use_custom_dash,
                  custom_dash=dash_string,
-                 label=label)
+                 label=label,
+                 rendering_pass=style["rendering_pass"])
     return symbol
 
 
