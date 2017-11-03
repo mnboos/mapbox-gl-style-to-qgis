@@ -1,14 +1,15 @@
 import os
 import uuid
 
-
-_qgis_join_styles = {
+_join_styles = {
+    None: "round",
     "bevel": "bevel",
     "round": "round",
     "miter": "miter"
 }
 
-_qgis_cap_styles = {
+_cap_styles = {
+    None: "round",
     "butt": "flat",
     "square": "square",
     "round": "round"
@@ -88,11 +89,11 @@ def _get_fill_symbol(index, style):
 def _get_line_symbol(index, style):
     color = _get_value_safe(style, "line-color")
     width = _get_value_safe(style, "line-width", 1)
-    capstyle = _qgis_cap_styles[_get_value_safe(style, "line-cap", "square")]
-    joinstyle = _qgis_join_styles[_get_value_safe(style, "line-join", "bevel")]
-    opacity = _get_value_safe(style, "line-join", 1)
+    capstyle = _cap_styles[_get_value_safe(style, "line-cap")]
+    joinstyle = _join_styles[_get_value_safe(style, "line-join")]
+    opacity = _get_value_safe(style, "line-opacity", 1)
     dashes = _get_value_safe(style, "line-dasharray", None)
-    dash_string = ""
+    dash_string = "0;0"
     use_custom_dash = 0
     if dashes:
         use_custom_dash = 1
