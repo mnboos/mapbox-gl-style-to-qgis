@@ -97,7 +97,11 @@ def _get_line_symbol(index, style):
     use_custom_dash = 0
     if dashes:
         use_custom_dash = 1
-        dash_string = ";".join(map(lambda d: str(d*width), dashes))
+        dash = dashes[0] * width
+        space = dashes[1] * width
+        if space <= width:
+            space += width
+        dash_string = "{};{}".format(dash, space)
 
     label = style["name"]
     if style["zoom_level"]:
