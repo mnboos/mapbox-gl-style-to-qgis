@@ -123,19 +123,32 @@ def parse_color(color):
         elif len(color) == 6:
             return "#" + color
         return ",".join(map(lambda v: str(int(v)), bytearray.fromhex(color)))
-    if color.startswith("hsla(") or color.startswith("hsl("):
-        has_alpha = color.startswith("hsla(")
-        colors = color.replace("hsla(", "").replace("hsl(", "")\
-            .replace(")", "").replace(" ", "").replace("%", "").split(",")
-        colors = map(lambda c: float(c), colors)
+    else:
+        return _get_color_string(color)
+
+
+def _get_color_string(color):
+    color = color.lower()
+    has_alpha = color.startswith("hsla(") or color.startswith("rgba(")
+    is_hsl = color.startswith("hsl")
+    colors = color.replace("hsla(", "").replace("hsl(", "").replace("rgba(", "").replace("rgb(", "").replace(")", "")\
+        .replace(" ", "").replace("%", "").split(",")
+    colors = map(lambda c: float(c), colors)
+    a = 1
+    if has_alpha:
+        a = colors[3]
+    if is_hsl:
         h = colors[0] / 360.0
         s = colors[1] / 100.0
         l = colors[2] / 100.0
-        a = 1
-        if has_alpha:
-            a = colors[3]
         r, g, b = colorsys.hls_to_rgb(h, l, s)
-        return ",".join(map(lambda c: str(int(round(255.0*c))), [r, g, b, a]))
+        return ",".join(map(lambda c: str(int(round(255.0 * c))), [r, g, b, a]))
+    else:
+        r = colors[0]
+        g = colors[1]
+        b = colors[2]
+        a = round(255.0*a)
+        return ",".join(map(lambda c: str(int(c)), [r, g, b, a]))
 
 
 def _apply_scale_range(styles):

@@ -1,6 +1,16 @@
 from core.helper import get_styles, parse_color
 
 
+def test_parse_rgb():
+    rgba = parse_color("rgb(1,2,3)")
+    assert rgba == "1,2,3,255"
+
+
+def test_parse_rgba():
+    rgba = parse_color("rgba(1, 2, 3, 0.5)")
+    assert rgba == "1,2,3,128"
+
+
 def test_parse_hsl():
     rgba = parse_color("hsl(28, 76%, 67%)")
     assert rgba == "235,167,107,255"
