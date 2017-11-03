@@ -54,11 +54,11 @@ def _get_fill_symbol(index, style):
                 <prop k="joinstyle" v="bevel"/>
                 <prop k="offset" v="{offset}"/>
                 <prop k="offset_map_unit_scale" v="0,0,0,0,0,0"/>
-                <prop k="offset_unit" v="MapUnit"/>
+                <prop k="offset_unit" v="Pixel"/>
                 <prop k="outline_color" v="{fill_outline_color}"/>
                 <prop k="outline_style" v="solid"/>
                 <prop k="outline_width" v="0.7"/>
-                <prop k="outline_width_unit" v="MapUnit"/>
+                <prop k="outline_width_unit" v="Pixel"/>
                 <prop k="style" v="solid"/>
             </layer>
         </symbol>
@@ -82,7 +82,7 @@ def _get_line_symbol(index, style):
     use_custom_dash = 0
     if dashes:
         use_custom_dash = 1
-        dash_string = ";".join(reversed(map(lambda d: str(d*width), dashes)))
+        dash_string = ";".join(map(lambda d: str(d*width), dashes))
 
     label = style["name"]
     if style["zoom_level"]:
@@ -103,7 +103,7 @@ def _get_line_symbol(index, style):
           <prop k="line_width_unit" v="Pixel"/>
           <prop k="offset" v="0"/>
           <prop k="offset_map_unit_scale" v="0,0,0,0,0,0"/>
-          <prop k="offset_unit" v="MapUnit"/>
+          <prop k="offset_unit" v="Pixel"/>
           <prop k="use_custom_dash" v="{use_custom_dash}"/>
           <prop k="width_map_unit_scale" v="0,0,0,0,0,0"/>
         </layer>

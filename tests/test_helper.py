@@ -36,8 +36,33 @@ def test_parse_short_hex():
     assert rgba == "170,187,204"
 
 
+def test_line_dasharray():
+    style = _get_line_style({
+        "line-color": "#cba",
+        "line-dasharray": [
+          1.5,
+          0.75
+        ],
+        "line-width": {
+          "base": 1.2,
+          "stops": [
+            [
+              15,
+              1.2
+            ],
+            [
+              20,
+              4
+            ]
+          ]
+        }
+      })
+    styles = get_styles(style)
+    assert styles == ""
+
+
 def test_zoom_level_zero():
-    style = _get_style({
+    style = _get_fill_style({
         "fill-opacity": {
           "base": 1,
           "stops": [[0, 0.9], [10, 0.3]]
@@ -61,7 +86,7 @@ def test_zoom_level_zero():
 
 
 def test_get_styles_float():
-    style = _get_style({
+    style = _get_fill_style({
         "fill-opacity": 0.7,
         "fill-color": "#f2eae2",
     })
@@ -77,7 +102,7 @@ def test_get_styles_float():
 
 
 def test_get_styles_simple():
-    style = _get_style({
+    style = _get_fill_style({
         "fill-outline-color": "#dfdbd7",
         "fill-color": "#f2eae2",
     })
@@ -93,7 +118,7 @@ def test_get_styles_simple():
 
 
 def test_get_styles():
-    style = _get_style({
+    style = _get_fill_style({
         "fill-outline-color": "#dfdbd7",
         "fill-color": "#f2eae2",
         "fill-opacity": {
@@ -143,9 +168,18 @@ def _are_dicts_equal(d1, d2):
             raise AssertionError("Key '{}' not equal: {} != {}".format(k, d1[k], d2[k]))
     return True
 
-def _get_style(paint):
+
+def _get_fill_style(paint):
     return {
         "id": None,
         "type": "fill",
+        "paint": paint
+    }
+
+
+def _get_line_style(paint):
+    return {
+        "id": None,
+        "type": "line",
         "paint": paint
     }

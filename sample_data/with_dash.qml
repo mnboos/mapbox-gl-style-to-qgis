@@ -1,10 +1,13 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
-<qgis version="2.18.13" simplifyAlgorithm="0" minimumScale="0" maximumScale="1e+08" simplifyDrawingHints="0" minLabelScale="0" maxLabelScale="1e+08" simplifyDrawingTol="1" readOnly="0" simplifyMaxScale="1" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" scaleBasedLabelVisibilityFlag="0">
+<qgis version="2.18.13" simplifyAlgorithm="0" minimumScale="0" maximumScale="1e+08" simplifyDrawingHints="1" minLabelScale="0" maxLabelScale="1e+08" simplifyDrawingTol="1" readOnly="0" simplifyMaxScale="1" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" scaleBasedLabelVisibilityFlag="0">
   <edittypes>
-    <edittype widgetv2type="TextEdit" name="render_height">
+    <edittype widgetv2type="TextEdit" name="brunnel">
       <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
     </edittype>
-    <edittype widgetv2type="TextEdit" name="render_min_height">
+    <edittype widgetv2type="TextEdit" name="oneway">
+      <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
+    </edittype>
+    <edittype widgetv2type="TextEdit" name="ramp">
       <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
     </edittype>
     <edittype widgetv2type="TextEdit" name="_zoom_level">
@@ -19,31 +22,38 @@
     <edittype widgetv2type="TextEdit" name="_id">
       <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
     </edittype>
+    <edittype widgetv2type="TextEdit" name="class">
+      <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
+    </edittype>
+    <edittype widgetv2type="TextEdit" name="service">
+      <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
+    </edittype>
   </edittypes>
-  <renderer-v2 forceraster="0" symbollevels="0" type="singleSymbol" enableorderby="0">
+  <renderer-v2 forceraster="0" symbollevels="0" type="RuleRenderer" enableorderby="0">
+    <rules key="aa2d7ecf-b7a0-4ebb-89a4-7b0777a22677">
+      <rule scalemaxdenom="750" filter="(((attribute($currentfeature, 'service') is null) and (&quot;brunnel&quot; is null or &quot;brunnel&quot; not in ('bridge', 'tunnel')) and (&quot;class&quot; = 'rail')))" key="356ff4cd-4679-4665-8119-f22be7d69df4" symbol="0" scalemindenom="1" label="railway-hatching-zoom-20"/>
+    </rules>
     <symbols>
       <symbol alpha="1" clip_to_extent="1" type="line" name="0">
         <layer pass="0" class="SimpleLine" locked="0">
           <prop k="capstyle" v="square"/>
-          <prop k="customdash" v="5;2"/>
+          <prop k="customdash" v="8;64"/>
           <prop k="customdash_map_unit_scale" v="0,0,0,0,0,0"/>
-          <prop k="customdash_unit" v="MM"/>
+          <prop k="customdash_unit" v="Pixel"/>
           <prop k="draw_inside_polygon" v="0"/>
           <prop k="joinstyle" v="bevel"/>
-          <prop k="line_color" v="47,54,158,255"/>
+          <prop k="line_color" v="187,187,187,255"/>
           <prop k="line_style" v="solid"/>
-          <prop k="line_width" v="0.26"/>
-          <prop k="line_width_unit" v="MM"/>
+          <prop k="line_width" v="8"/>
+          <prop k="line_width_unit" v="Pixel"/>
           <prop k="offset" v="0"/>
           <prop k="offset_map_unit_scale" v="0,0,0,0,0,0"/>
-          <prop k="offset_unit" v="MM"/>
+          <prop k="offset_unit" v="Pixel"/>
           <prop k="use_custom_dash" v="1"/>
           <prop k="width_map_unit_scale" v="0,0,0,0,0,0"/>
         </layer>
       </symbol>
     </symbols>
-    <rotation/>
-    <sizescale scalemethod="diameter"/>
   </renderer-v2>
   <labeling type="simple"/>
   <customproperties>
@@ -186,6 +196,7 @@
     <property key="labeling/xOffset" value="0"/>
     <property key="labeling/yOffset" value="0"/>
     <property key="labeling/zIndex" value="0"/>
+    <property key="layerStyle" value="C:\Users\Martin\.qgis2\python\plugins\vector_tiles_reader\styles/transportation.linestring.qml"/>
     <property key="variableNames"/>
     <property key="variableValues"/>
     <property key="vector_tile_source" value="https://free.tilehosting.com/data/v3.json?key=6irhAXGgsi8TrIDL0211"/>
@@ -194,11 +205,11 @@
   <blendMode>0</blendMode>
   <featureBlendMode>0</featureBlendMode>
   <layerTransparency>0</layerTransparency>
-  <displayfield>_id</displayfield>
+  <displayfield>name</displayfield>
   <label>0</label>
   <labelattributes>
     <label fieldname="" text="Label"/>
-    <family fieldname="" name="MS Shell Dlg 2"/>
+    <family fieldname="" name="Cantarell"/>
     <size fieldname="" units="pt" value="12"/>
     <bold fieldname="" on="0"/>
     <italic fieldname="" on="0"/>
@@ -217,8 +228,9 @@
     <selectedonly on=""/>
   </labelattributes>
   <SingleCategoryDiagramRenderer diagramType="Histogram" sizeLegend="0" attributeLegend="1">
-    <DiagramCategory penColor="#000000" labelPlacementMethod="XHeight" penWidth="0" diagramOrientation="Up" sizeScale="0,0,0,0,0,0" minimumSize="0" barWidth="5" penAlpha="255" maxScaleDenominator="1e+08" backgroundColor="#ffffff" transparency="0" width="15" scaleDependency="Area" backgroundAlpha="255" angleOffset="1440" scaleBasedVisibility="0" enabled="0" height="15" lineSizeScale="0,0,0,0,0,0" sizeType="MM" lineSizeType="MM" minScaleDenominator="inf">
+    <DiagramCategory penColor="#000000" labelPlacementMethod="XHeight" penWidth="0" diagramOrientation="Up" sizeScale="0,0,0,0,0,0" minimumSize="0" barWidth="5" penAlpha="255" maxScaleDenominator="25000" backgroundColor="#ffffff" transparency="0" width="15" scaleDependency="Area" backgroundAlpha="255" angleOffset="1440" scaleBasedVisibility="0" enabled="0" height="15" lineSizeScale="0,0,0,0,0,0" sizeType="MM" lineSizeType="MM" minScaleDenominator="inf">
       <fontProperties description="MS Shell Dlg 2,8.25,-1,5,50,0,0,0,0,0" style=""/>
+      <attribute field="" color="#000000" label=""/>
     </DiagramCategory>
     <symbol alpha="1" clip_to_extent="1" type="marker" name="sizeSymbol">
       <layer pass="0" class="SimpleMarker" locked="0">
@@ -243,34 +255,40 @@
       </layer>
     </symbol>
   </SingleCategoryDiagramRenderer>
-  <DiagramLayerSettings yPosColumn="-1" showColumn="-1" linePlacementFlags="10" placement="2" dist="0" xPosColumn="-1" priority="0" obstacle="0" zIndex="0" showAll="1"/>
-  <annotationform></annotationform>
+  <DiagramLayerSettings yPosColumn="-1" showColumn="-1" linePlacementFlags="10" placement="0" dist="0" xPosColumn="-1" priority="0" obstacle="0" zIndex="0" showAll="1"/>
+  <annotationform>.</annotationform>
   <aliases>
-    <alias field="render_height" index="0" name=""/>
-    <alias field="render_min_height" index="1" name=""/>
-    <alias field="_zoom_level" index="2" name=""/>
-    <alias field="_row" index="3" name=""/>
-    <alias field="_col" index="4" name=""/>
-    <alias field="_id" index="5" name=""/>
+    <alias field="brunnel" index="0" name=""/>
+    <alias field="oneway" index="1" name=""/>
+    <alias field="ramp" index="2" name=""/>
+    <alias field="_zoom_level" index="3" name=""/>
+    <alias field="_row" index="4" name=""/>
+    <alias field="_col" index="5" name=""/>
+    <alias field="_id" index="6" name=""/>
+    <alias field="class" index="7" name=""/>
+    <alias field="service" index="8" name=""/>
   </aliases>
   <excludeAttributesWMS/>
   <excludeAttributesWFS/>
   <attributeactions default="-1"/>
   <attributetableconfig actionWidgetStyle="dropDown" sortExpression="" sortOrder="0">
     <columns>
-      <column width="-1" hidden="0" type="field" name="render_height"/>
-      <column width="-1" hidden="0" type="field" name="render_min_height"/>
-      <column width="-1" hidden="0" type="field" name="_zoom_level"/>
       <column width="-1" hidden="0" type="field" name="_row"/>
       <column width="-1" hidden="0" type="field" name="_col"/>
-      <column width="-1" hidden="0" type="field" name="_id"/>
       <column width="-1" hidden="1" type="actions"/>
+      <column width="-1" hidden="0" type="field" name="_zoom_level"/>
+      <column width="-1" hidden="0" type="field" name="_id"/>
+      <column width="-1" hidden="0" type="field" name="brunnel"/>
+      <column width="-1" hidden="0" type="field" name="oneway"/>
+      <column width="-1" hidden="0" type="field" name="ramp"/>
+      <column width="-1" hidden="0" type="field" name="class"/>
+      <column width="-1" hidden="0" type="field" name="service"/>
     </columns>
   </attributetableconfig>
-  <editform></editform>
+  <editform>.</editform>
   <editforminit/>
   <editforminitcodesource>0</editforminitcodesource>
-  <editforminitfilepath></editforminitfilepath>
+  <editforminitfilepath>.</editforminitfilepath>
   <editforminitcode><![CDATA[# -*- coding: utf-8 -*-
 """
 QGIS forms can have a Python function that is called when the form is
@@ -296,12 +314,15 @@ def my_form_open(dialog, layer, feature):
     <fieldstyles/>
   </conditionalstyles>
   <defaults>
-    <default field="render_height" expression=""/>
-    <default field="render_min_height" expression=""/>
+    <default field="brunnel" expression=""/>
+    <default field="oneway" expression=""/>
+    <default field="ramp" expression=""/>
     <default field="_zoom_level" expression=""/>
     <default field="_row" expression=""/>
     <default field="_col" expression=""/>
     <default field="_id" expression=""/>
+    <default field="class" expression=""/>
+    <default field="service" expression=""/>
   </defaults>
   <previewExpression></previewExpression>
   <layerGeometryType>1</layerGeometryType>
