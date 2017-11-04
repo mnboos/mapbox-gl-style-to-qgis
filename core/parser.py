@@ -28,6 +28,8 @@ def generate_qgis_styles(mapbox_gl_style_path):
                 geo_type_name = ".linestring"
             elif layer_type == "symbol":
                 geo_type_name = ""
+            else:
+                continue
 
             if source_layer not in styles_by_target_layer:
                 styles_by_target_layer[source_layer] = {

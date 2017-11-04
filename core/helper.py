@@ -141,8 +141,17 @@ def get_styles(layer):
 def _parse_expr(expr):
     if not expr:
         return expr
-    expr = expr.replace("{", '"').replace("}", '"').replace("\n", " ").strip().replace(" ", "+'\\n'+")
+    fields = expr.replace("{", '"').replace("}", '"').replace("\n", " ").strip().split(" ")
+    fields = map(lambda (index, f): _get_field_expr(index, f), enumerate(fields))
+    expr = "+".join(fields)
     return escape(expr, entities={'"': "&quot;"})
+
+
+def _get_field_expr(index, field):
+    if index > 0:
+        return "if({field} is null, '', '\\n' + {field})".format(field=field)
+    else:
+        return "if({field} is null, '', {field})".format(field=field)
 
 
 def parse_color(color):
