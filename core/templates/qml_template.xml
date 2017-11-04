@@ -6,7 +6,7 @@
     {rules}
     {symbols}
   </renderer-v2>
-  <labeling type="simple"/>
+  {labeling}
   <blendMode>0</blendMode>
   <featureBlendMode>0</featureBlendMode>
   <layerTransparency>0</layerTransparency>
@@ -121,5 +121,4 @@ def my_form_open(dialog, layer, feature):
     <default field="_id" expression=""/>
   </defaults>
   <previewExpression></previewExpression>
-  <layerGeometryType>{geo_type}</layerGeometryType>
 </qgis>

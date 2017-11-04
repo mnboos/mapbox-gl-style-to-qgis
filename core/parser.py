@@ -2,7 +2,6 @@ import os
 import json
 import sys
 import traceback
-from xml.sax.saxutils import escape
 from helper import get_qgis_rule, get_styles
 from xml_helper import create_style_file
 
@@ -24,18 +23,16 @@ def generate_qgis_styles(mapbox_gl_style_path):
             layer_type = l["type"]
             source_layer = l["source-layer"]
             if layer_type == "fill":
-                geo_type = 2
-                geo_type_name = "polygon"
+                geo_type_name = ".polygon"
             elif layer_type == "line":
-                geo_type = 1
-                geo_type_name = "linestring"
-            else:
-                continue
+                geo_type_name = ".linestring"
+            elif layer_type == "symbol":
+                geo_type_name = ""
 
             if source_layer not in styles_by_target_layer:
                 styles_by_target_layer[source_layer] = {
-                    "geo_type": geo_type,
-                    "file_name": "{}.{}.qml".format(source_layer, geo_type_name),
+                    "file_name": "{}{}.qml".format(source_layer, geo_type_name),
+                    "type": layer_type,
                     "styles": []
                 }
             qgis_styles = get_styles(l)
@@ -44,8 +41,6 @@ def generate_qgis_styles(mapbox_gl_style_path):
             filter_expr = None
             if "filter" in l:
                 filter_expr = get_qgis_rule(l["filter"])
-                if filter_expr:
-                    filter_expr = escape(filter_expr, entities={'"': "&quot;"})
                     # print("'{}'  ==>  '{}'".format(l["filter"], filter_expr))
             for s in qgis_styles:
                 s["rule"] = filter_expr

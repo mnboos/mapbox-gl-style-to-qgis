@@ -1,5 +1,6 @@
 import copy
 import colorsys
+from xml.sax.saxutils import escape
 
 
 _comparision_operators = {
@@ -92,6 +93,14 @@ def get_styles(layer):
         all_values.extend(get_properties_by_zoom(layer, "paint/line-color", is_color=True))
         all_values.extend(get_properties_by_zoom(layer, "paint/line-opacity"))
         all_values.extend(get_properties_by_zoom(layer, "paint/line-dasharray"))
+    elif layer_type == "symbol":
+        all_values.extend(get_properties_by_zoom(layer, "layout/text-font"))
+        all_values.extend(get_properties_by_zoom(layer, "layout/text-size"))
+        all_values.extend(get_properties_by_zoom(layer, "layout/text-field", is_expression=True))
+        all_values.extend(get_properties_by_zoom(layer, "layout/text-max-width"))
+        all_values.extend(get_properties_by_zoom(layer, "layout/text-color"))
+        all_values.extend(get_properties_by_zoom(layer, "layout/text-halo-width"))
+        all_values.extend(get_properties_by_zoom(layer, "layout/text-halo-color"))
 
     for v in all_values:
         zoom = v["zoom_level"]
@@ -127,6 +136,13 @@ def get_styles(layer):
     # print "apply scales: ", resulting_styles
 
     return resulting_styles
+
+
+def _parse_expr(expr):
+    if not expr:
+        return expr
+    expr = expr.replace("{", '"').replace("}", '"').replace("\n", " ").strip().replace(" ", "+'\\n'+")
+    return escape(expr, entities={'"': "&quot;"})
 
 
 def parse_color(color):
@@ -180,7 +196,7 @@ def _apply_scale_range(styles):
         s["max_scale_denom"] = max_scale_denom
 
 
-def get_properties_by_zoom(paint, property_path, is_color=False):
+def get_properties_by_zoom(paint, property_path, is_color=False, is_expression=False):
     parts = property_path.split("/")
     value = paint
     for p in parts:
@@ -195,6 +211,8 @@ def get_properties_by_zoom(paint, property_path, is_color=False):
             value = s[1]
             if is_color:
                 value = parse_color(value)
+            if is_expression:
+                value = _parse_expr(value)
             properties.append({
                 "name": parts[-1],
                 "zoom_level": int(s[0]),
@@ -202,6 +220,8 @@ def get_properties_by_zoom(paint, property_path, is_color=False):
     elif value:
         if is_color:
             value = parse_color(value)
+        if is_expression:
+            value = _parse_expr(value)
         properties.append({
             "name": parts[-1],
             "zoom_level": None,
@@ -226,13 +246,13 @@ def _get_value_safe(value, path):
     return result
 
 
-def get_qgis_rule(mb_filter):
+def get_qgis_rule(mb_filter, escape_result=True):
     op = mb_filter[0]
     if op in _comparision_operators:
         result = _get_comparision_expr(mb_filter)
     elif op in _combining_operators:
         is_none = op == "none"
-        all_exprs = map(lambda f: get_qgis_rule(f), mb_filter[1:])
+        all_exprs = map(lambda f: get_qgis_rule(f, escape_result=False), mb_filter[1:])
         all_exprs = filter(lambda e: e is not None, all_exprs)
         full_expr = " {} ".format(_combining_operators[op]).join(all_exprs)
         if is_none:
@@ -247,6 +267,8 @@ def get_qgis_rule(mb_filter):
 
     if result:
         result = "({})".format(result)
+        if escape_result:
+            result = escape(result, entities={'"': "&quot;"})
     return result
 
 
