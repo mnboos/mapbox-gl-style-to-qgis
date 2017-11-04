@@ -1,3 +1,8 @@
+[![Build Status](https://travis-ci.org/mnboos/mapbox-gl-style-to-qgis.svg?branch=master)](https://travis-ci.org/mnboos/mapbox-gl-style-to-qgis)
+
+This tool reads a Mapbox GL Style and generates QGIS styles in the
+QGIS-QML format (which is actually XML)
+
 ## Fill-Styles (for Polygons)
 The following properties are implemented:
 

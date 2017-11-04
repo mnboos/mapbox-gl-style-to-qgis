@@ -17,7 +17,7 @@ _cap_styles = {
 
 
 def create_style_file(output_directory, layer_style):
-    with open(os.path.join(__file__, "../templates/qml_template.xml"), 'r') as f:
+    with open(os.path.join(os.path.dirname(__file__), "templates/qml_template.xml"), 'r') as f:
         template = f.read()
 
     geo_type = layer_style["geo_type"]
