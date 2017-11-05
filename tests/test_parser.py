@@ -9,7 +9,9 @@ from core import parser
 
 def test_generate():
     path = os.path.join(os.path.dirname(__file__), "..", "sample_data", "osm_bright.json")
-    output_directory = os.path.join(os.path.dirname(__file__), "generated")
+    # path = os.path.join(os.path.dirname(__file__), "..", "sample_data", "klokantech_basic.json")
+    # output_directory = os.path.join(os.path.dirname(__file__), "generated")
+    output_directory = r"C:\DEV\Vector-Tiles-Reader-QGIS-Plugin\styles"
     if os.path.isdir(output_directory):
         shutil.rmtree(output_directory)
     styles = parser.generate_qgis_styles(mapbox_gl_style_path=path)
