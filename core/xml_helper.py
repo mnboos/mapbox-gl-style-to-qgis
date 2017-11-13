@@ -117,7 +117,7 @@ def _get_fill_symbol(index, style):
     fill_color_rgba = _get_value_safe(style, "fill-color", "")
     fill_outline_color_rgba = _get_value_safe(style, "fill-outline-color", fill_color_rgba)
     label = style["name"]
-    if style["zoom_level"]:
+    if style["zoom_level"] is not None:
         label = "{}-zoom-{}".format(label, style["zoom_level"])
 
     symbol = """<!-- {label} -->
@@ -157,14 +157,19 @@ def _get_line_symbol(index, style):
     use_custom_dash = 0
     if dashes:
         use_custom_dash = 1
-        dash = dashes[0] * width
-        space = dashes[1] * width
-        if space <= width:
-            space += width
+        if isinstance(width, (float, int)):
+            dash = dashes[0] * width
+            space = dashes[1] * width
+            if space <= width:
+                space += width
+        else:
+            # todo: use expressions for dash patterns
+            dash = dashes[0]
+            space = dashes[1]
         dash_string = "{};{}".format(dash, space)
 
     label = style["name"]
-    if style["zoom_level"]:
+    if style["zoom_level"] is not None:
         label = "{}-zoom-{}".format(label, style["zoom_level"])
     symbol = """<!-- {label} -->
     <symbol alpha="{opacity}" clip_to_extent="1" type="line" name="{index}">
@@ -177,8 +182,10 @@ def _get_line_symbol(index, style):
           <prop k="joinstyle" v="{joinstyle}"/>
           <prop k="line_color" v="{line_color}"/>
           <prop k="line_style" v="solid"/>
-          <prop k="line_width" v="{line_width}"/>
-          <prop k="line_width_unit" v="Pixel"/>
+          <prop k="line_width_dd_expression" v="1"/>
+          <prop k="line_width_unit" v="MapUnit"/>
+          <prop k="width_dd_active" v="1"/>
+          <prop k="width_dd_expression" v="{line_width}"/>
           <prop k="offset" v="0"/>
           <prop k="offset_map_unit_scale" v="0,0,0,0,0,0"/>
           <prop k="offset_unit" v="Pixel"/>
@@ -205,7 +212,7 @@ def _get_rule(index, style, rule_content):
     min_denom = ""
     rule_filter = ""
     label = style["name"]
-    if style["zoom_level"]:
+    if style["zoom_level"] is not None:
         label = "{}-zoom-{}".format(label, style["zoom_level"])
     if style["rule"]:
         rule_filter = 'filter="{}"'.format(style["rule"])

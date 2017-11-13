@@ -75,6 +75,17 @@ def test_line_cap():
     assert styles[0]["line-cap"] == "round"
 
 
+def test_stops():
+    style = _get_line_style({
+        "line-color": "#9e9cab",
+        "line-dasharray": [3,1,1,1],
+        "line-width": {
+          "base": 1.4,
+          "stops": [[4, 0.4], [5, 1], [12, 3]]}
+      })
+    styles = get_styles(style)
+
+
 def test_zoom_level_zero():
     style = _get_fill_style({
         "fill-opacity": {

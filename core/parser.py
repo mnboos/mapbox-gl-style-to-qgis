@@ -28,7 +28,7 @@ def generate_qgis_styles(mapbox_gl_style_path):
             "paint": {
                 "line-opacity": 0
             }
-        },
+        }
     ]
     layers.extend(js["layers"])
 

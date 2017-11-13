@@ -91,13 +91,13 @@ def get_styles(layer):
     elif layer_type == "line":
         all_values.extend(get_properties_by_zoom(layer, "layout/line-join"))
         all_values.extend(get_properties_by_zoom(layer, "layout/line-cap"))
-        all_values.extend(get_properties_by_zoom(layer, "paint/line-width"))
+        all_values.extend(get_properties_by_zoom(layer, "paint/line-width", default=0, can_interpolate=True))
         all_values.extend(get_properties_by_zoom(layer, "paint/line-color", is_color=True, default="rgba(0,0,0,0)"))
         all_values.extend(get_properties_by_zoom(layer, "paint/line-opacity"))
         all_values.extend(get_properties_by_zoom(layer, "paint/line-dasharray"))
     elif layer_type == "symbol":
         all_values.extend(get_properties_by_zoom(layer, "layout/text-font"))
-        all_values.extend(get_properties_by_zoom(layer, "layout/text-size"))
+        all_values.extend(get_properties_by_zoom(layer, "layout/text-size", can_interpolate=True))
         all_values.extend(get_properties_by_zoom(layer, "layout/text-field", is_expression=True))
         all_values.extend(get_properties_by_zoom(layer, "layout/text-max-width"))
         all_values.extend(get_properties_by_zoom(layer, "layout/text-color"))
@@ -150,8 +150,11 @@ def _parse_expr(expr):
     fields = expr.replace("{", '"').replace("}", '"').replace("\n", " ").strip().split(" ")
     fields = map(lambda (index, f): _get_field_expr(index, f), enumerate(fields))
     expr = "+".join(fields)
-    return escape(expr, entities={'"': "&quot;"})
+    return escape_xml(expr)
 
+
+def escape_xml(value):
+    return escape(value, entities={'"': "&quot;"})
 
 def _get_field_expr(index, field):
     if index > 0:
@@ -211,7 +214,10 @@ def _apply_scale_range(styles):
         s["max_scale_denom"] = max_scale_denom
 
 
-def get_properties_by_zoom(paint, property_path, is_color=False, is_expression=False, default=None):
+def get_properties_by_zoom(paint, property_path, is_color=False, is_expression=False, can_interpolate=False, default=None):
+    if (is_color or is_expression) and can_interpolate:
+        raise RuntimeError("Colors and expressions cannot be interpolated")
+
     parts = property_path.split("/")
     value = paint
     for p in parts:
@@ -224,15 +230,27 @@ def get_properties_by_zoom(paint, property_path, is_color=False, is_expression=F
         value = default
     properties = []
     if stops:
-        for s in stops:
-            value = s[1]
+        for index, stop in enumerate(stops[:-1]):
+            lower_zoom = stop[0]
+            value = stop[1]
+            if can_interpolate:
+                next_stop = stops[index + 1]
+                upper_zoom = next_stop[0]
+                second_value = next_stop[1]
+                max_scale = upper_bound_map_scales_by_zoom_level[int(lower_zoom)]
+                min_scale = upper_bound_map_scales_by_zoom_level[int(upper_zoom)]
+                value = "scale_linear(@map_scale, {min_scale}, {max_scale}, {second_value}, {first_value})"\
+                    .format(min_scale=min_scale,
+                            max_scale=max_scale,
+                            first_value=value,
+                            second_value=second_value)
             if is_color:
                 value = parse_color(value)
             if is_expression:
                 value = _parse_expr(value)
             properties.append({
                 "name": parts[-1],
-                "zoom_level": int(s[0]),
+                "zoom_level": int(lower_zoom),
                 "value": value})
     elif value is not None:
         if is_color:
