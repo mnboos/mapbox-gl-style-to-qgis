@@ -75,14 +75,16 @@ def get_styles(layer):
         "min_scale_denom": None,
         "max_scale_denom": None
     }
+
     if layer_id:
         base_style["name"] = layer_id
 
+    resulting_styles = []
     values_by_zoom = {}
 
     all_values = []
     if layer_type == "fill":
-        all_values.extend(get_properties_by_zoom(layer, "paint/fill-color", is_color=True))
+        all_values.extend(get_properties_by_zoom(layer, "paint/fill-color", is_color=True, default="rgba(0,0,0,0)"))
         all_values.extend(get_properties_by_zoom(layer, "paint/fill-outline-color", is_color=True))
         all_values.extend(get_properties_by_zoom(layer, "paint/fill-translate"))
         all_values.extend(get_properties_by_zoom(layer, "paint/fill-opacity"))
@@ -90,7 +92,7 @@ def get_styles(layer):
         all_values.extend(get_properties_by_zoom(layer, "layout/line-join"))
         all_values.extend(get_properties_by_zoom(layer, "layout/line-cap"))
         all_values.extend(get_properties_by_zoom(layer, "paint/line-width"))
-        all_values.extend(get_properties_by_zoom(layer, "paint/line-color", is_color=True))
+        all_values.extend(get_properties_by_zoom(layer, "paint/line-color", is_color=True, default="rgba(0,0,0,0)"))
         all_values.extend(get_properties_by_zoom(layer, "paint/line-opacity"))
         all_values.extend(get_properties_by_zoom(layer, "paint/line-dasharray"))
     elif layer_type == "symbol":
@@ -111,7 +113,6 @@ def get_styles(layer):
                 values_by_zoom[zoom] = []
             values_by_zoom[zoom].append(v)
 
-    resulting_styles = []
     if not values_by_zoom:
         resulting_styles.append(base_style)
     else:
@@ -210,15 +211,17 @@ def _apply_scale_range(styles):
         s["max_scale_denom"] = max_scale_denom
 
 
-def get_properties_by_zoom(paint, property_path, is_color=False, is_expression=False):
+def get_properties_by_zoom(paint, property_path, is_color=False, is_expression=False, default=None):
     parts = property_path.split("/")
     value = paint
     for p in parts:
         value = _get_value_safe(value, p)
 
     stops = None
-    if value:
+    if value is not None:
         stops = _get_value_safe(value, "stops")
+    else:
+        value = default
     properties = []
     if stops:
         for s in stops:
@@ -231,7 +234,7 @@ def get_properties_by_zoom(paint, property_path, is_color=False, is_expression=F
                 "name": parts[-1],
                 "zoom_level": int(s[0]),
                 "value": value})
-    elif value:
+    elif value is not None:
         if is_color:
             value = parse_color(value)
         if is_expression:
@@ -255,7 +258,7 @@ def _get_rules_for_stops(stops):
 
 def _get_value_safe(value, path):
     result = None
-    if value and isinstance(value, dict) and path and path in value:
+    if value is not None and isinstance(value, dict) and path and path in value:
         result = value[path]
     return result
 

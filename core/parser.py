@@ -12,13 +12,28 @@ def generate_qgis_styles(mapbox_gl_style_path):
     with open(mapbox_gl_style_path, 'r') as f:
         js = json.load(f)
 
-    all_layers = set()
-    for l in js["layers"]:
-        if "source-layer" in l:
-            all_layers.add(l["source-layer"])
+    layers = [
+        {
+            "id": "default-polygon-transparency",
+            "source-layer": "transparent",
+            "type": "fill",
+            "paint": {
+                "fill-opacity": 0,
+            }
+        },
+        {
+            "id": "default-line-transparency",
+            "source-layer": "transparent",
+            "type": "line",
+            "paint": {
+                "line-opacity": 0
+            }
+        },
+    ]
+    layers.extend(js["layers"])
 
-    styles_by_target_layer = {}
-    for l in js["layers"]:
+    styles_by_file_name = {}
+    for l in layers:
         if "source-layer" in l:
             layer_type = l["type"]
             source_layer = l["source-layer"]
@@ -31,9 +46,10 @@ def generate_qgis_styles(mapbox_gl_style_path):
             else:
                 continue
 
-            if source_layer not in styles_by_target_layer:
-                styles_by_target_layer[source_layer] = {
-                    "file_name": "{}{}.qml".format(source_layer, geo_type_name),
+            file_name = "{}{}.qml".format(source_layer, geo_type_name)
+            if file_name not in styles_by_file_name:
+                styles_by_file_name[file_name] = {
+                    "file_name": file_name,
                     "type": layer_type,
                     "styles": []
                 }
@@ -47,15 +63,15 @@ def generate_qgis_styles(mapbox_gl_style_path):
             for s in qgis_styles:
                 s["rule"] = filter_expr
 
-            styles_by_target_layer[source_layer]["styles"].extend(qgis_styles)
+            styles_by_file_name[file_name]["styles"].extend(qgis_styles)
 
-    for layer_name in styles_by_target_layer:
-        styles = styles_by_target_layer[layer_name]["styles"]
+    for layer_name in styles_by_file_name:
+        styles = styles_by_file_name[layer_name]["styles"]
         for index, style in enumerate(styles):
             rule = style["rule"]
             styles_with_same_target = filter(lambda s: s["rule"] == rule, styles[:index])
             style["rendering_pass"] = len(styles_with_same_target)
-    return styles_by_target_layer
+    return styles_by_file_name
 
 
 def write_styles(styles_by_target_layer, output_directory):
