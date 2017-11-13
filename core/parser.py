@@ -53,8 +53,7 @@ def generate_qgis_styles(mapbox_gl_style_path):
         styles = styles_by_target_layer[layer_name]["styles"]
         for index, style in enumerate(styles):
             rule = style["rule"]
-            zoom = style["zoom_level"]
-            styles_with_same_target = filter(lambda s: s["rule"] == rule and s["zoom_level"] == zoom, styles[:index])
+            styles_with_same_target = filter(lambda s: s["rule"] == rule, styles[:index])
             style["rendering_pass"] = len(styles_with_same_target)
     return styles_by_target_layer
 

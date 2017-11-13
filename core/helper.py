@@ -115,6 +115,11 @@ def get_styles(layer):
     if not values_by_zoom:
         resulting_styles.append(base_style)
     else:
+        if min(upper_bound_map_scales_by_zoom_level) not in values_by_zoom:
+            values_by_zoom[min(upper_bound_map_scales_by_zoom_level)] = []
+        if max(upper_bound_map_scales_by_zoom_level) not in values_by_zoom:
+            values_by_zoom[max(upper_bound_map_scales_by_zoom_level)] = []
+
         clone = base_style
         for zoom in sorted(values_by_zoom.keys()):
             values = values_by_zoom[zoom]
