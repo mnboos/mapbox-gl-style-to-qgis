@@ -154,6 +154,7 @@ def _get_line_symbol(index, style):
     opacity = _get_value_safe(style, "line-opacity", 1)
     dashes = _get_value_safe(style, "line-dasharray", None)
     dash_string = "0;0"
+    dash_expr = ""
     use_custom_dash = 0
     if dashes:
         use_custom_dash = 1
@@ -161,7 +162,7 @@ def _get_line_symbol(index, style):
         space = "({} * {})".format(dashes[1], width)
         if space <= width:
             space = "({} + {})".format(space, width)
-        dash_string = "concat({}, ';', {})".format(dash, space)
+        dash_expr = "concat({}, ';', {})".format(dash, space)
 
     label = style["name"]
     if style["zoom_level"] is not None:
@@ -170,9 +171,11 @@ def _get_line_symbol(index, style):
     <symbol alpha="{opacity}" clip_to_extent="1" type="line" name="{index}">
         <layer pass="{rendering_pass}" class="SimpleLine" locked="0">
           <prop k="capstyle" v="{capstyle}"/>
-          <prop k="customdash_dd_expression" v="{custom_dash}"/>
-          <prop k="customdash_dd_useexpr" v="1"/>
+          <prop k="customdash_dd_expression" v="{dash_expr}"/>
+          <prop k="customdash_dd_useexpr" v="{use_custom_dash}"/>
+          <prop k="customdash" v="{custom_dash}"/>
           <prop k="customdash_map_unit_scale" v="0,0,0,0,0,0"/>
+          <prop k="use_custom_dash" v="{use_custom_dash}"/>
           <prop k="customdash_unit" v="Pixel"/>
           <prop k="draw_inside_polygon" v="0"/>
           <prop k="joinstyle" v="{joinstyle}"/>
@@ -185,7 +188,6 @@ def _get_line_symbol(index, style):
           <prop k="offset" v="0"/>
           <prop k="offset_map_unit_scale" v="0,0,0,0,0,0"/>
           <prop k="offset_unit" v="Pixel"/>
-          <prop k="use_custom_dash" v="{use_custom_dash}"/>
           <prop k="width_map_unit_scale" v="0,0,0,0,0,0"/>
         </layer>
       </symbol>
@@ -197,6 +199,7 @@ def _get_line_symbol(index, style):
                  joinstyle=joinstyle,
                  use_custom_dash=use_custom_dash,
                  custom_dash=dash_string,
+                 dash_expr=dash_expr,
                  label=label,
                  rendering_pass=style["rendering_pass"])
     return symbol
