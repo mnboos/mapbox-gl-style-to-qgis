@@ -157,16 +157,11 @@ def _get_line_symbol(index, style):
     use_custom_dash = 0
     if dashes:
         use_custom_dash = 1
-        if isinstance(width, (float, int)):
-            dash = dashes[0] * width
-            space = dashes[1] * width
-            if space <= width:
-                space += width
-        else:
-            # todo: use expressions for dash patterns
-            dash = dashes[0]
-            space = dashes[1]
-        dash_string = "{};{}".format(dash, space)
+        dash = "({} * {})".format(dashes[0], width)
+        space = "({} * {})".format(dashes[1], width)
+        if space <= width:
+            space = "({} + {})".format(space, width)
+        dash_string = "concat({}, ';', {})".format(dash, space)
 
     label = style["name"]
     if style["zoom_level"] is not None:
@@ -175,7 +170,8 @@ def _get_line_symbol(index, style):
     <symbol alpha="{opacity}" clip_to_extent="1" type="line" name="{index}">
         <layer pass="{rendering_pass}" class="SimpleLine" locked="0">
           <prop k="capstyle" v="{capstyle}"/>
-          <prop k="customdash" v="{custom_dash}"/>
+          <prop k="customdash_dd_expression" v="{custom_dash}"/>
+          <prop k="customdash_dd_useexpr" v="1"/>
           <prop k="customdash_map_unit_scale" v="0,0,0,0,0,0"/>
           <prop k="customdash_unit" v="Pixel"/>
           <prop k="draw_inside_polygon" v="0"/>
