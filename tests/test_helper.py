@@ -1,4 +1,4 @@
-from core import get_styles, parse_color
+from core import get_styles, parse_color, get_qgis_rule
 
 
 def test_parse_rgb():
@@ -97,7 +97,7 @@ def test_zoom_level_zero():
     assert len(styles) == 3
     assert _are_dicts_equal(styles[0], {
         'zoom_level': 0,
-        'max_scale_denom': 10000000000,
+        'max_scale_denom': 1000000000,
         'min_scale_denom': 750000,
         'fill-color': '0,0,0,0',
         'fill-opacity': 0.9
@@ -181,6 +181,51 @@ def test_get_styles():
         'min_scale_denom': 100
     })
 
+
+def test_filter_depth():
+    highway_primary_casing = get_qgis_rule(_highway_primary_casing, escape_result=False)
+    highway_primary = get_qgis_rule(_highway_primary, escape_result=False)
+    assert highway_primary_casing == highway_primary
+
+
+_highway_primary_casing = [
+        "all",
+        [
+          "!in",
+          "brunnel",
+          "bridge",
+          "tunnel"
+        ],
+        [
+          "in",
+          "class",
+          "primary"
+        ]
+      ]
+
+
+_highway_primary =[
+        "all",
+        [
+          "==",
+          "$type",
+          "LineString"
+        ],
+        [
+          "all",
+          [
+            "!in",
+            "brunnel",
+            "bridge",
+            "tunnel"
+          ],
+          [
+            "in",
+            "class",
+            "primary"
+          ]
+        ]
+      ]
 
 def _are_dicts_equal(d1, d2):
     for k in d1:

@@ -9,12 +9,12 @@ from core import get_qgis_rule
 
 def test_qgis_attribute():
     rule = get_qgis_rule(["<=", "@map_scale", "20000"], escape_result=False)
-    assert rule == "(@map_scale <= '20000')"
+    assert rule == "@map_scale <= '20000'"
 
 
 def test_eq_filter():
     rule = get_qgis_rule(["==", "class", "address"], escape_result=False)
-    assert rule == "(\"class\" = 'address')"
+    assert rule == "\"class\" = 'address'"
 
 
 def test_type_comparision():
@@ -24,27 +24,27 @@ def test_type_comparision():
 
 def test_neq_filter():
     rule = get_qgis_rule(["!=", "class", "address"], escape_result=False)
-    assert rule == "(\"class\" != 'address')"
+    assert rule == "\"class\" != 'address'"
 
 
 def test_leq_filter():
     rule = get_qgis_rule(["<=", "class", "address"], escape_result=False)
-    assert rule == "(\"class\" <= 'address')"
+    assert rule == "\"class\" <= 'address'"
 
 
 def test_eqgt_filter():
     rule = get_qgis_rule([">=", "class", "address"], escape_result=False)
-    assert rule == "(\"class\" >= 'address')"
+    assert rule == "\"class\" >= 'address'"
 
 
 def test_gt_filter():
     rule = get_qgis_rule([">", "class", "address"], escape_result=False)
-    assert rule == "(\"class\" > 'address')"
+    assert rule == "\"class\" > 'address'"
 
 
 def test_lt_filter():
     rule = get_qgis_rule(["<", "class", "address"], escape_result=False)
-    assert rule == "(\"class\" < 'address')"
+    assert rule == "\"class\" < 'address'"
 
 #endregion
 
@@ -65,12 +65,12 @@ def test_membership_not_in():
 
 def test_has():
     expr = get_qgis_rule(["has", "name"], escape_result=False)
-    assert expr == "(attribute($currentfeature, 'name') is not null)"
+    assert expr == "attribute($currentfeature, 'name') is not null"
 
 
 def test_has_not():
     expr = get_qgis_rule(["!has", "name"], escape_result=False)
-    assert expr == "(attribute($currentfeature, 'name') is null)"
+    assert expr == "attribute($currentfeature, 'name') is null"
 
 # endregion
 
@@ -80,19 +80,19 @@ def test_all():
     f2 = ["!=", "name", "hello world"]
     f3 = [">=", "height", "123"]
     rule = get_qgis_rule(["all", f1, f2, f3], escape_result=False)
-    assert rule == """(("class" = 'address') and ("name" != 'hello world') and ("height" >= '123'))"""
+    assert rule == """("class" = 'address') and ("name" != 'hello world') and ("height" >= '123')"""
 
 
 def test_any():
     f1 = ["==", "class", "address"]
     f2 = ["!=", "name", "hello world"]
     rule = get_qgis_rule(["any", f1, f2], escape_result=False)
-    assert rule == """(("class" = 'address') or ("name" != 'hello world'))"""
+    assert rule == """"class" = 'address' or "name" != 'hello world'"""
 
 
 def test_none():
     f1 = ["==", "class", "address"]
     f2 = ["!=", "name", "hello world"]
     rule = get_qgis_rule(["none", f1, f2], escape_result=False)
-    assert rule == """(not ("class" = 'address') and not ("name" != 'hello world'))"""
+    assert rule == """not "class" = 'address' and not "name" != 'hello world'"""
 # endregion

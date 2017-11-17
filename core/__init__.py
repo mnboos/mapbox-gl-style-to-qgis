@@ -2,6 +2,7 @@ import os
 import json
 import copy
 import colorsys
+from itertools import groupby
 from xml.sax.saxutils import escape
 from xml_helper import create_style_file
 
@@ -54,23 +55,22 @@ def generate_qgis_styles(mapbox_gl_style_path):
                     "styles": []
                 }
             qgis_styles = get_styles(l)
-            # target_file_name =
-            # print("Create polygon style: {}".format(target_file_name))
             filter_expr = None
             if "filter" in l:
                 filter_expr = get_qgis_rule(l["filter"])
-                    # print("'{}'  ==>  '{}'".format(l["filter"], filter_expr))
             for s in qgis_styles:
                 s["rule"] = filter_expr
-
             styles_by_file_name[file_name]["styles"].extend(qgis_styles)
 
     for layer_name in styles_by_file_name:
         styles = styles_by_file_name[layer_name]["styles"]
         for index, style in enumerate(styles):
             rule = style["rule"]
-            styles_with_same_target = filter(lambda s: s["rule"] == rule, styles[:index])
-            style["rendering_pass"] = len(styles_with_same_target)
+            name = style["name"]
+            zoom = style["zoom_level"]
+            styles_with_same_target = filter(lambda s: s["name"] != name and s["rule"] == rule and s["zoom_level"] <= zoom, styles[:index])
+            groups_by_name = list(groupby(styles_with_same_target, key=lambda s: s["name"]))
+            style["rendering_pass"] = len(groups_by_name)
     return styles_by_file_name
 
 
@@ -114,7 +114,7 @@ _existential_operators = {
    for zoom level 14 will no longer be active.
 """
 upper_bound_map_scales_by_zoom_level = {
-    0: 10000000000,
+    0: 1000000000,
     1: 1000000000,
     2: 500000000,
     3: 200000000,
@@ -364,15 +364,19 @@ def _get_value_safe(value, path):
     return result
 
 
-def get_qgis_rule(mb_filter, escape_result=True):
+def get_qgis_rule(mb_filter, escape_result=True, depth=0):
     op = mb_filter[0]
     if op in _comparision_operators:
         result = _get_comparision_expr(mb_filter)
     elif op in _combining_operators:
         is_none = op == "none"
-        all_exprs = map(lambda f: get_qgis_rule(f, escape_result=False), mb_filter[1:])
+        all_exprs = map(lambda f: get_qgis_rule(f, escape_result=False, depth=depth+1), mb_filter[1:])
         all_exprs = filter(lambda e: e is not None, all_exprs)
-        full_expr = " {} ".format(_combining_operators[op]).join(all_exprs)
+        comb_op = _combining_operators[op]
+        if comb_op == "and" and len(all_exprs) > 1:
+            all_exprs = map(lambda e: "({})".format(e), all_exprs)
+        full_expr = " {} ".format(comb_op).join(all_exprs)
+
         if is_none:
             full_expr = "not {}".format(full_expr)
         result = full_expr
@@ -384,9 +388,10 @@ def get_qgis_rule(mb_filter, escape_result=True):
         raise NotImplementedError("Not Implemented Operator: '{}', Filter: {}".format(op, mb_filter))
 
     if result:
-        result = "({})".format(result)
+        # if depth > 0:
+        #     result = "({})".format(result)
         if escape_result:
-            result = escape(result, entities={'"': "&quot;"})
+            result = escape_xml(result)
     return result
 
 
@@ -415,7 +420,7 @@ def _get_membership_expr(mb_filter):
         null_str = "is null or"
     else:
         null_str = "is not null and"
-    return "{what} {null} {what} {op} {coll}".format(what=what, op=op, coll=collection, null=null_str)
+    return "({what} {null} {what} {op} {coll})".format(what=what, op=op, coll=collection, null=null_str)
 
 
 def _get_existential_expr(mb_filter):
