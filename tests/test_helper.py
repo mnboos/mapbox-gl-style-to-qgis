@@ -1,4 +1,4 @@
-from core.helper import get_styles, parse_color
+from core import get_styles, parse_color
 
 
 def test_parse_rgb():
@@ -94,20 +94,22 @@ def test_zoom_level_zero():
         }
       })
     styles = get_styles(style)
-    assert len(styles) == 2
-    assert styles[0] == {
+    assert len(styles) == 3
+    assert _are_dicts_equal(styles[0], {
         'zoom_level': 0,
+        'max_scale_denom': 10000000000,
         'min_scale_denom': 750000,
-        'max_scale_denom': 10000000000L,
+        'fill-color': '0,0,0,0',
         'fill-opacity': 0.9
-    }
+    })
 
-    assert styles[1] == {
-        'min_scale_denom': 1,
+    assert _are_dicts_equal(styles[1], {
         'zoom_level': 10,
         'max_scale_denom': 750000,
+        'min_scale_denom': 100,
+        'fill-color': '0,0,0,0',
         'fill-opacity': 0.3
-    }
+    })
 
 
 def test_get_styles_float():
@@ -116,7 +118,6 @@ def test_get_styles_float():
         "fill-color": "#f2eae2",
     })
     styles = get_styles(style)
-    print styles
     assert styles[0] == {
         "fill-color": "#f2eae2",
         "fill-opacity": 0.7,
@@ -161,9 +162,9 @@ def test_get_styles():
         }
       })
     styles = get_styles(style)
-    assert len(styles) == 2
+    assert len(styles) == 4
     styles = sorted(styles, key=lambda s: s["zoom_level"])
-    assert _are_dicts_equal(styles[0], {
+    assert _are_dicts_equal(styles[1], {
         'fill-outline-color': '#dfdbd7',
         'fill-color': '#f2eae2',
         'zoom_level': 13,
@@ -171,13 +172,13 @@ def test_get_styles():
         'max_scale_denom': 100000,
         'min_scale_denom': 12500
     })
-    assert _are_dicts_equal(styles[1], {
+    assert _are_dicts_equal(styles[2], {
         'fill-outline-color': '#dfdbd7',
         'fill-color': '#f2eae2',
         'zoom_level': 16,
         'fill-opacity': 1,
         'max_scale_denom': 12500,
-        'min_scale_denom': 1
+        'min_scale_denom': 100
     })
 
 
