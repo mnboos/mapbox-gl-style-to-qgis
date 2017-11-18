@@ -13,25 +13,7 @@ def generate_qgis_styles(mapbox_gl_style_path):
     with open(mapbox_gl_style_path, 'r') as f:
         js = json.load(f)
 
-    layers = [
-        {
-            "id": "default-polygon-transparency",
-            "source-layer": "transparent",
-            "type": "fill",
-            "paint": {
-                "fill-opacity": 0,
-            }
-        },
-        {
-            "id": "default-line-transparency",
-            "source-layer": "transparent",
-            "type": "line",
-            "paint": {
-                "line-opacity": 0
-            }
-        }
-    ]
-    layers.extend(js["layers"])
+    layers = js["layers"]
 
     styles_by_file_name = {}
     for l in layers:
@@ -71,7 +53,20 @@ def generate_qgis_styles(mapbox_gl_style_path):
             styles_with_same_target = filter(lambda s: s["name"] != name and s["rule"] == rule and s["zoom_level"] <= zoom, styles[:index])
             groups_by_name = list(groupby(styles_with_same_target, key=lambda s: s["name"]))
             style["rendering_pass"] = len(groups_by_name)
+
+    _add_default_transparency_styles(styles_by_file_name)
     return styles_by_file_name
+
+
+def _add_default_transparency_styles(style_dict):
+    for t in ["point", "linestring", "polygon"]:
+        file_name = "transparent.{}.qml".format(t)
+        style_dict[file_name] = {
+            "styles": [],
+            "file_name": file_name,
+            "layer-transparency": 100,
+            "type": None
+        }
 
 
 def write_styles(styles_by_target_layer, output_directory):
@@ -222,7 +217,6 @@ def get_styles(layer):
 
     resulting_styles = sorted(resulting_styles, key=lambda s: s["zoom_level"])
     _apply_scale_range(resulting_styles)
-    # print "apply scales: ", resulting_styles
 
     return resulting_styles
 

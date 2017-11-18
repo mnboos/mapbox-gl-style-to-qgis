@@ -27,6 +27,10 @@ def create_style_file(output_directory, layer_style):
     symbols = []
     labeling_rules = []
 
+    layer_transparency = 0
+    if "layer-transparency" in layer_style:
+        layer_transparency = layer_style["layer-transparency"]
+
     for index, s in enumerate(layer_style["styles"]):
         if layer_type == "line":
             rules.append(_get_rule(index, s, rule_content=""))
@@ -65,7 +69,7 @@ def create_style_file(output_directory, layer_style):
 
     template = template.format(renderer=renderer,
                                labeling=labeling_string,
-                               layer_transparency=0)
+                               layer_transparency=layer_transparency)
     file_path = os.path.join(output_directory, layer_style["file_name"])
     if not os.path.isdir(output_directory):
         os.mkdir(output_directory)
