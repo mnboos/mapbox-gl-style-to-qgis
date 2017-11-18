@@ -64,7 +64,8 @@ def create_style_file(output_directory, layer_style):
     """.format(rules="\n".join(labeling_rules)).replace("$key$", '{' + str(uuid.uuid4()) + '}')
 
     template = template.format(renderer=renderer,
-                               labeling=labeling_string)
+                               labeling=labeling_string,
+                               layer_transparency=0)
     file_path = os.path.join(output_directory, layer_style["file_name"])
     if not os.path.isdir(output_directory):
         os.mkdir(output_directory)

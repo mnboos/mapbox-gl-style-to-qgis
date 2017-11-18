@@ -80,7 +80,6 @@ def write_styles(styles_by_target_layer, output_directory):
         create_style_file(output_directory=output_directory, layer_style=style)
 
 
-
 _comparision_operators = {
     "==": "=",
     "<=": "<=",
@@ -194,10 +193,16 @@ def get_styles(layer):
     if not values_by_zoom:
         resulting_styles.append(base_style)
     else:
-        if min(upper_bound_map_scales_by_zoom_level) not in values_by_zoom:
-            values_by_zoom[min(upper_bound_map_scales_by_zoom_level)] = []
-        if max(upper_bound_map_scales_by_zoom_level) not in values_by_zoom:
-            values_by_zoom[max(upper_bound_map_scales_by_zoom_level)] = []
+        minzoom = min(upper_bound_map_scales_by_zoom_level)
+        maxzoom = max(upper_bound_map_scales_by_zoom_level)
+        if "minzoom" in layer:
+            minzoom = int(layer["minzoom"])
+        if "maxzoom" in layer:
+            maxzoom = int(layer["maxzoom"])
+        if minzoom not in values_by_zoom:
+            values_by_zoom[minzoom] = []
+        if maxzoom not in values_by_zoom:
+            values_by_zoom[maxzoom] = []
 
         clone = base_style
         for zoom in sorted(values_by_zoom.keys()):

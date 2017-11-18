@@ -143,6 +143,30 @@ def test_get_styles_simple():
     }
 
 
+def test_scale():
+    style = _get_line_style({
+        "line-width": {
+          "stops": [
+            [
+              10,
+              0
+            ],
+            [
+              15,
+              1
+            ]
+          ]
+        }
+      })
+    styles = get_styles(style)
+    assert len(styles) == 3
+    assert styles[0]["zoom_level"] == 0
+    assert styles[0]["line-width"] == 0
+    assert styles[1]["zoom_level"] == 10
+    assert styles[2]["zoom_level"] == 15
+    assert styles[2]["line-width"] == 1
+
+
 def test_get_styles():
     style = _get_fill_style({
         "fill-outline-color": "#dfdbd7",

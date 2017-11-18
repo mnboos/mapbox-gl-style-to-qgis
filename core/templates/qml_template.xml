@@ -6,7 +6,7 @@
   {labeling}
   <blendMode>0</blendMode>
   <featureBlendMode>0</featureBlendMode>
-  <layerTransparency>0</layerTransparency>
+  <layerTransparency>{layer_transparency}</layerTransparency>
   <displayfield>name</displayfield>
   <label>0</label>
   <labelattributes>
