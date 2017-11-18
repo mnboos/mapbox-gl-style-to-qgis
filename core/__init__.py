@@ -172,9 +172,9 @@ def get_styles(layer):
         all_values.extend(get_properties_by_zoom(layer, "layout/text-size", can_interpolate=True))
         all_values.extend(get_properties_by_zoom(layer, "layout/text-field", is_expression=True))
         all_values.extend(get_properties_by_zoom(layer, "layout/text-max-width"))
-        all_values.extend(get_properties_by_zoom(layer, "layout/text-color"))
-        all_values.extend(get_properties_by_zoom(layer, "layout/text-halo-width"))
-        all_values.extend(get_properties_by_zoom(layer, "layout/text-halo-color"))
+        all_values.extend(get_properties_by_zoom(layer, "paint/text-color"))
+        all_values.extend(get_properties_by_zoom(layer, "paint/text-halo-width", can_interpolate=True))
+        all_values.extend(get_properties_by_zoom(layer, "paint/text-halo-color"))
 
     for v in all_values:
         zoom = v["zoom_level"]
