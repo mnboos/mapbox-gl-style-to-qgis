@@ -37,7 +37,7 @@ def test_parse_short_hex():
 
 
 def test_line_dasharray():
-    style = _get_line_style({
+    style = _get_line_layer({
         "line-color": "#cba",
         "line-dasharray": [
           1.5,
@@ -76,7 +76,7 @@ def test_line_cap():
 
 
 def test_stops():
-    style = _get_line_style({
+    style = _get_line_layer({
         "line-color": "#9e9cab",
         "line-dasharray": [3,1,1,1],
         "line-width": {
@@ -143,8 +143,31 @@ def test_get_styles_simple():
     }
 
 
+def test_highway_motorway():
+    style = _get_line_layer({
+    "line-width": {
+      "base": 1.2,
+      "stops": [
+        [
+          6.5,
+          0
+        ],
+        [
+          7,
+          0.5
+        ],
+        [
+          20,
+          18
+        ]
+      ]
+    }
+  })
+    result = get_styles(style)
+    assert len(result) == 2
+
 def test_scale():
-    style = _get_line_style({
+    style = _get_line_layer({
         "line-width": {
           "stops": [
             [
@@ -272,7 +295,7 @@ def _get_fill_style(paint):
     }
 
 
-def _get_line_style(paint):
+def _get_line_layer(paint):
     return {
         "id": None,
         "type": "line",

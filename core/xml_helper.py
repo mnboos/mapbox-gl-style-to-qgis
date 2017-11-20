@@ -100,7 +100,7 @@ def _get_labeling_settings(style):
 
     return """
     <settings>
-        <text-style fontItalic="0" fontFamily="{font}" fontLetterSpacing="0" fontUnderline="0" fontWeight="50" fontStrikeout="0" textTransp="0" previewBkgrdColor="#ffffff" fontCapitals="0" textColor="{text_color}" fontSizeInMapUnits="1" isExpression="1" blendMode="0" fontSizeMapUnitScale="0,0,0,0,0,0" fontSize="{font_size}" fieldName="{field_name}" namedStyle="Normal" fontWordSpacing="0" useSubstitutions="0">
+        <text-style fontItalic="0" fontFamily="{font}" fontLetterSpacing="0" fontUnderline="0" fontWeight="50" fontStrikeout="0" textTransp="0" previewBkgrdColor="#ffffff" fontCapitals="0" textColor="{text_color}" fontSizeInMapUnits="1" isExpression="1" blendMode="0" fontSizeMapUnitScale="0,0,0,0,0,0" fontSize="12" fieldName="{field_name}" namedStyle="Normal" fontWordSpacing="0" useSubstitutions="0">
             <substitutions/>
         </text-style>
         <text-format placeDirectionSymbol="0" multilineAlign="4294967295" rightDirectionSymbol=">" multilineHeight="1" plussign="0" addDirectionSymbol="0" leftDirectionSymbol="&lt;" formatNumbers="0" decimals="3" wrapChar="" reverseDirectionSymbol="0"/>
@@ -109,7 +109,9 @@ def _get_labeling_settings(style):
         <shadow shadowOffsetMapUnitScale="0,0,0,0,0,0" shadowOffsetGlobal="1" shadowRadiusUnits="1" shadowTransparency="30" shadowColor="0,0,0,255" shadowUnder="0" shadowScale="100" shadowOffsetDist="1" shadowDraw="0" shadowOffsetAngle="135" shadowRadius="1.5" shadowRadiusMapUnitScale="0,0,0,0,0,0" shadowBlendMode="6" shadowRadiusAlphaOnly="0" shadowOffsetUnits="1"/>
         <placement repeatDistanceUnit="1" placement="2" maxCurvedCharAngleIn="25" repeatDistance="0" distInMapUnits="0" labelOffsetInMapUnits="1" xOffset="0" distMapUnitScale="0,0,0,0,0,0" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" preserveRotation="1" repeatDistanceMapUnitScale="0,0,0,0,0,0" centroidWhole="0" priority="5" yOffset="0" offsetType="0" placementFlags="9" centroidInside="0" dist="0" angleOffset="0" maxCurvedCharAngleOut="-25" fitInPolygonOnly="0" quadOffset="4" labelOffsetMapUnitScale="0,0,0,0,0,0"/>
         <rendering fontMinPixelSize="3" scaleMax="10000000" fontMaxPixelSize="10000" scaleMin="1" upsidedownLabels="0" limitNumLabels="0" obstacle="1" obstacleFactor="1" scaleVisibility="0" fontLimitPixelSize="0" mergeLines="0" obstacleType="0" labelPerPart="0" zIndex="0" maxNumLabels="2000" displayAll="0" minFeatureSize="0"/>
-        <data-defined/>
+        <data-defined>
+            <Size expr="{font_size}*4" field="" active="true" useExpr="true"/>
+        </data-defined>
     </settings>
     """.format(font=font,
                font_size=font_size,
@@ -130,7 +132,7 @@ def _get_fill_symbol(index, style):
     if style["zoom_level"] is not None:
         label = "{}-zoom-{}".format(label, style["zoom_level"])
 
-    symbol = """<!-- {label} -->
+    symbol = """<!-- {description} -->
     <symbol alpha="{opacity}" clip_to_extent="1" type="fill" name="{index}">
             <layer pass="{rendering_pass}" class="SimpleFill" locked="0">
                 <prop k="border_width_map_unit_scale" v="0,0,0,0,0,0"/>
@@ -151,7 +153,7 @@ def _get_fill_symbol(index, style):
                    fill_color=fill_color_rgba,
                    fill_outline_color=fill_outline_color_rgba,
                    offset=offset,
-                   label=label,
+                   description=label,
                    rendering_pass=style["rendering_pass"])
     return symbol
 
@@ -177,7 +179,7 @@ def _get_line_symbol(index, style):
     label = style["name"]
     if style["zoom_level"] is not None:
         label = "{}-zoom-{}".format(label, style["zoom_level"])
-    symbol = """<!-- {label} -->
+    symbol = """<!-- {description} -->
     <symbol alpha="{opacity}" clip_to_extent="1" type="line" name="{index}">
         <layer pass="{rendering_pass}" class="SimpleLine" locked="0">
           <prop k="capstyle" v="{capstyle}"/>
@@ -192,7 +194,7 @@ def _get_line_symbol(index, style):
           <prop k="line_color" v="{line_color}"/>
           <prop k="line_style" v="solid"/>
           <prop k="line_width_dd_expression" v="1"/>
-          <prop k="line_width_unit" v="MapUnit"/>
+          <prop k="line_width_unit" v="Pixel"/>
           <prop k="width_dd_active" v="1"/>
           <prop k="width_dd_expression" v="{line_width}"/>
           <prop k="offset" v="0"/>
@@ -210,7 +212,7 @@ def _get_line_symbol(index, style):
                  use_custom_dash=use_custom_dash,
                  custom_dash=dash_string,
                  dash_expr=dash_expr,
-                 label=label,
+                 description=label,
                  rendering_pass=style["rendering_pass"])
     return symbol
 

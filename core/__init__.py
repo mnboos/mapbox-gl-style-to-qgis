@@ -185,20 +185,16 @@ def get_styles(layer):
                 values_by_zoom[zoom] = []
             values_by_zoom[zoom].append(v)
 
+    if "minzoom" in layer:
+        minzoom = int(layer["minzoom"])
+        values_by_zoom[minzoom] = []
+    if "maxzoom" in layer:
+        maxzoom = int(layer["maxzoom"])
+        values_by_zoom[maxzoom] = []
+
     if not values_by_zoom:
         resulting_styles.append(base_style)
     else:
-        minzoom = min(upper_bound_map_scales_by_zoom_level)
-        maxzoom = max(upper_bound_map_scales_by_zoom_level)
-        if "minzoom" in layer:
-            minzoom = int(layer["minzoom"])
-        if "maxzoom" in layer:
-            maxzoom = int(layer["maxzoom"])
-        if minzoom not in values_by_zoom:
-            values_by_zoom[minzoom] = []
-        if maxzoom not in values_by_zoom:
-            values_by_zoom[maxzoom] = []
-
         clone = base_style
         for zoom in sorted(values_by_zoom.keys()):
             values = values_by_zoom[zoom]
@@ -225,7 +221,10 @@ def _parse_expr(expr):
     if not expr:
         return expr
     fields = expr.replace("{", '"').replace("}", '"').replace("\n", " ").strip().split(" ")
-    fields = map(lambda (index, f): _get_field_expr(index, f), enumerate(fields))
+    if fields:
+        return escape_xml(fields[0])
+        expr = _get_field_expr(0, fields)
+    # fields = map(lambda (index, f): _get_field_expr(index, f), enumerate(fields))
     expr = "+".join(fields)
     return escape_xml(expr)
 
