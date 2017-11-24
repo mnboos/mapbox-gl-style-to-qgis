@@ -13,8 +13,13 @@ def interpolate(a, b, ratio):
 def get_exponential_interpolation_factor(input, base, lower, upper):
     difference = upper - lower
     progress = input - lower
-    ratio = ((base**progress) - 1) / ((base**difference) - 1)
-    return ratio
+    if (difference == 0):
+        return difference
+    elif base == 1:
+        return progress / difference
+    else:
+        ratio = ((base**progress) - 1) / ((base**difference) - 1)
+        return ratio
 
 @qgsfunction(args='auto', group='Custom')
 def interpolate_exp(zoom, base, lower_zoom, upper_zoom, lower_value, upper_value, feature, parent):
@@ -55,6 +60,7 @@ def get_zoom(scale, lower_scale, upper_scale, lower_zoom, upper_zoom):
 
 @qgsfunction(args='auto', group='Custom')
 def get_zoom_for_scale(scale, feature, parent):
+    scale = int(scale)
     scales_sorted = list(reversed(sorted(_zoom_level_by_lower_scale_bound)))
     lower_zoom = None
     upper_zoom = None

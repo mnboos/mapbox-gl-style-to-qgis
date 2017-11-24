@@ -83,15 +83,24 @@ def _get_labeling_settings(style):
     if isinstance(font, list):
         font = font[0]
     font = "MS Shell Dlg 2"
-    font_size = _get_value_safe(style, "text-size", 8.25)
+    font_size = _get_value_safe(style, "text-size", 16)
+    font_size_is_expr = not isinstance(font_size, (int, float))
+    font_size_expr_active = "true"
+    if not font_size_is_expr:
+        font_size_expr = ""
+        font_size_expr_active = "false"
+        font_size = int(font_size / 96.0 * 72)
+    else:
+        font_size_expr = "{} / 96*72".format(font_size)
+        font_size = ""
     field_name = _get_value_safe(style, "text-field")
     assert field_name
     text_color = _get_value_safe(style, "text-color", "0,0,0,255")
     buffer_color = _get_value_safe(style, "text-halo-color", "0,0,0,0")
     buffer_size = _get_value_safe(style, "text-halo-width", 0)
     draw_buffer = 0
-    if buffer_size > 0:
-        draw_buffer = 1
+    # if buffer_size > 0:
+    #     draw_buffer = 1
 
     label_placement_flags = {
         "line": 9,
@@ -100,7 +109,7 @@ def _get_labeling_settings(style):
 
     return """
     <settings>
-        <text-style fontItalic="0" fontFamily="{font}" fontLetterSpacing="0" fontUnderline="0" fontWeight="50" fontStrikeout="0" textTransp="0" previewBkgrdColor="#ffffff" fontCapitals="0" textColor="{text_color}" fontSizeInMapUnits="0" isExpression="1" blendMode="0" fontSizeMapUnitScale="0,0,0,0,0,0" fontSize="12" fieldName="{field_name}" namedStyle="Normal" fontWordSpacing="0" useSubstitutions="0">
+        <text-style fontItalic="0" fontFamily="{font}" fontLetterSpacing="0" fontUnderline="0" fontWeight="50" fontStrikeout="0" textTransp="0" previewBkgrdColor="#ffffff" fontCapitals="0" textColor="{text_color}" fontSizeInMapUnits="0" isExpression="1" blendMode="0" fontSizeMapUnitScale="0,0,0,0,0,0" fontSize="{font_size}" fieldName="{field_name}" namedStyle="Normal" fontWordSpacing="0" useSubstitutions="0">
             <substitutions/>
         </text-style>
         <text-format placeDirectionSymbol="0" multilineAlign="4294967295" rightDirectionSymbol=">" multilineHeight="1" plussign="0" addDirectionSymbol="0" leftDirectionSymbol="&lt;" formatNumbers="0" decimals="3" wrapChar="" reverseDirectionSymbol="0"/>
@@ -110,15 +119,17 @@ def _get_labeling_settings(style):
         <placement repeatDistanceUnit="1" placement="2" maxCurvedCharAngleIn="25" repeatDistance="0" distInMapUnits="0" labelOffsetInMapUnits="1" xOffset="0" distMapUnitScale="0,0,0,0,0,0" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" preserveRotation="1" repeatDistanceMapUnitScale="0,0,0,0,0,0" centroidWhole="0" priority="5" yOffset="0" offsetType="0" placementFlags="9" centroidInside="0" dist="0" angleOffset="0" maxCurvedCharAngleOut="-25" fitInPolygonOnly="0" quadOffset="4" labelOffsetMapUnitScale="0,0,0,0,0,0"/>
         <rendering fontMinPixelSize="3" scaleMax="10000000" fontMaxPixelSize="10000" scaleMin="1" upsidedownLabels="0" limitNumLabels="0" obstacle="1" obstacleFactor="1" scaleVisibility="0" fontLimitPixelSize="0" mergeLines="0" obstacleType="0" labelPerPart="0" zIndex="0" maxNumLabels="2000" displayAll="0" minFeatureSize="0"/>
         <data-defined>
-            <Size expr="{font_size}/96*72" field="" active="true" useExpr="true"/>
+            <Size expr="{font_size_expr}" field="" active="{font_size_expr_active}" useExpr="{font_size_expr_active}"/>
         </data-defined>
     </settings>
     """.format(font=font,
                font_size=font_size,
+               font_size_expr=font_size_expr,
                field_name=field_name,
                text_color=text_color,
                buffer_size=buffer_size,
                buffer_color=buffer_color,
+               font_size_expr_active=font_size_expr_active,
                draw_buffer=draw_buffer)
 
 
@@ -161,6 +172,14 @@ def _get_fill_symbol(index, style):
 def _get_line_symbol(index, style):
     color = _get_value_safe(style, "line-color")
     width = _get_value_safe(style, "line-width", 1)
+    width_expr = width
+    width_is_expr = not isinstance(width, (int, float))
+    width_dd_active = 0
+    if width_is_expr:
+        width = "1"
+        width_dd_active = 1
+    else:
+        width_expr = "1"
     capstyle = _cap_styles[_get_value_safe(style, "line-cap")]
     joinstyle = _join_styles[_get_value_safe(style, "line-join")]
     opacity = _get_value_safe(style, "line-opacity", 1)
@@ -193,10 +212,10 @@ def _get_line_symbol(index, style):
           <prop k="joinstyle" v="{joinstyle}"/>
           <prop k="line_color" v="{line_color}"/>
           <prop k="line_style" v="solid"/>
-          <prop k="line_width_dd_expression" v="1"/>
+          <prop k="line_width" v="{line_width}"/>
           <prop k="line_width_unit" v="Pixel"/>
-          <prop k="width_dd_active" v="1"/>
-          <prop k="width_dd_expression" v="{line_width}"/>
+          <prop k="width_dd_active" v="{width_dd_active}"/>
+          <prop k="width_dd_expression" v="{line_width_expr}"/>
           <prop k="offset" v="0"/>
           <prop k="offset_map_unit_scale" v="0,0,0,0,0,0"/>
           <prop k="offset_unit" v="Pixel"/>
@@ -204,9 +223,11 @@ def _get_line_symbol(index, style):
         </layer>
       </symbol>
       """.format(index=index,
+                 width_dd_active=width_dd_active,
+                 line_width=width,
+                 line_width_expr=width_expr,
                  opacity=opacity,
                  line_color=color,
-                 line_width=width,
                  capstyle=capstyle,
                  joinstyle=joinstyle,
                  use_custom_dash=use_custom_dash,

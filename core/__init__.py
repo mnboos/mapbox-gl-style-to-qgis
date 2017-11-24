@@ -172,9 +172,9 @@ def get_styles(layer):
         all_values.extend(get_properties_by_zoom(layer, "layout/text-size", can_interpolate=True))
         all_values.extend(get_properties_by_zoom(layer, "layout/text-field", is_expression=True))
         all_values.extend(get_properties_by_zoom(layer, "layout/text-max-width"))
-        all_values.extend(get_properties_by_zoom(layer, "paint/text-color"))
+        all_values.extend(get_properties_by_zoom(layer, "paint/text-color", is_color=True))
         all_values.extend(get_properties_by_zoom(layer, "paint/text-halo-width", can_interpolate=True))
-        all_values.extend(get_properties_by_zoom(layer, "paint/text-halo-color"))
+        all_values.extend(get_properties_by_zoom(layer, "paint/text-halo-color", is_color=True))
 
     for v in all_values:
         zoom = v["zoom_level"]
@@ -307,35 +307,41 @@ def get_properties_by_zoom(paint, property_path, is_color=False, is_expression=F
         value = default
     properties = []
     if stops:
+        base = _get_value_safe(value, "base")
+        if not base:
+            base = 1
         stops_to_iterate = stops
         if can_interpolate:
             stops_to_iterate = stops[:-1]
 
         for index, stop in enumerate(stops_to_iterate):
+            is_qgis_expr = is_expression
             lower_zoom = stop[0]
             value = stop[1]
+            if is_color:
+                value = parse_color(value)
+            if is_expression:
+                value = _parse_expr(value)
             if can_interpolate:
+                is_qgis_expr = True
                 next_stop = stops[index + 1]
                 upper_zoom = next_stop[0]
                 second_value = next_stop[1]
                 max_scale = upper_bound_map_scales_by_zoom_level[int(lower_zoom)]
                 min_scale = upper_bound_map_scales_by_zoom_level[int(upper_zoom)]
-                # value = "scale_linear(@map_scale, {min_scale}, {max_scale}, {second_value}, {first_value})"\
-                value = "interpolate_exp(get_zoom_for_scale(@map_scale), 1.2, {min_zoom}, {max_zoom}, {first_value}, {second_value})"\
+                value = "interpolate_exp(get_zoom_for_scale(@map_scale), {base}, {min_zoom}, {max_zoom}, {first_value}, {second_value})"\
                     .format(min_zoom=int(lower_zoom),
                             max_zoom=int(upper_zoom),
+                            base=base,
                             min_scale=min_scale,
                             max_scale=max_scale,
                             first_value=value,
                             second_value=second_value)
-            if is_color:
-                value = parse_color(value)
-            if is_expression:
-                value = _parse_expr(value)
             properties.append({
                 "name": parts[-1],
                 "zoom_level": int(lower_zoom),
-                "value": value})
+                "value": value,
+                "is_qgis_expr": is_qgis_expr})
     elif value is not None:
         if is_color:
             value = parse_color(value)
@@ -344,7 +350,8 @@ def get_properties_by_zoom(paint, property_path, is_color=False, is_expression=F
         properties.append({
             "name": parts[-1],
             "zoom_level": None,
-            "value": value})
+            "value": value,
+            "is_qgis_expr": is_expression})
     return properties
 
 
