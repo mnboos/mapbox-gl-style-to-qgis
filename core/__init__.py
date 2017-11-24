@@ -320,8 +320,11 @@ def get_properties_by_zoom(paint, property_path, is_color=False, is_expression=F
                 second_value = next_stop[1]
                 max_scale = upper_bound_map_scales_by_zoom_level[int(lower_zoom)]
                 min_scale = upper_bound_map_scales_by_zoom_level[int(upper_zoom)]
-                value = "scale_linear(@map_scale, {min_scale}, {max_scale}, {second_value}, {first_value})"\
-                    .format(min_scale=min_scale,
+                # value = "scale_linear(@map_scale, {min_scale}, {max_scale}, {second_value}, {first_value})"\
+                value = "interpolate_exp(get_zoom_for_scale(@map_scale), 1.2, {min_zoom}, {max_zoom}, {first_value}, {second_value})"\
+                    .format(min_zoom=int(lower_zoom),
+                            max_zoom=int(upper_zoom),
+                            min_scale=min_scale,
                             max_scale=max_scale,
                             first_value=value,
                             second_value=second_value)
