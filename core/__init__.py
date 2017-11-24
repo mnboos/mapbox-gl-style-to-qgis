@@ -407,6 +407,12 @@ def _get_comparision_expr(mb_filter):
     attr_in_quotes = not attr.startswith("@")
     if attr_in_quotes:
         attr = "\"{}\"".format(attr)
+    null_allowed = op == "!="
+    if null_allowed:
+        null = "{attr} is null or {attr}"
+    else:
+        null = "{attr} is not null and {attr}"
+    attr = null.format(attr=attr)
     return "{attr} {op} '{value}'".format(attr=attr, op=op, value=value)
 
 
