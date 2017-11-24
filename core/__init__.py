@@ -131,7 +131,8 @@ upper_bound_map_scales_by_zoom_level = {
     20: 750,
     21: 500,
     22: 250,
-    23: 100
+    23: 100,
+    24: 0
 }
 
 

@@ -22,6 +22,13 @@ def get_exponential_interpolation_factor(input, base, lower, upper):
         return ratio
 
 @qgsfunction(args='auto', group='Custom')
+def if_not_exists(file_path, default, feature, parent):
+	if os.path.isfile(file_path):
+		return file_path
+	else:
+		return default
+
+@qgsfunction(args='auto', group='Custom')
 def interpolate_exp(zoom, base, lower_zoom, upper_zoom, lower_value, upper_value, feature, parent):
     ratio = get_exponential_interpolation_factor(zoom, base, lower_zoom, upper_zoom)
     return interpolate(lower_value, upper_value, ratio)

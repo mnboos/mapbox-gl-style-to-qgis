@@ -169,6 +169,41 @@ def _get_fill_symbol(index, style):
     return symbol
 
 
+def _get_svg_symbol():
+    return """
+      <renderer-v2 forceraster="0" symbollevels="0" type="singleSymbol" enableorderby="0">
+    <symbols>
+      <symbol alpha="1" clip_to_extent="1" type="marker" name="0">
+        <layer pass="0" class="SvgMarker" locked="0">
+          <prop k="angle" v="0"/>
+          <prop k="color" v="132,172,217,255"/>
+          <prop k="horizontal_anchor_point" v="1"/>
+          <prop k="name" v="./Downloads/method-draw-image.svg"/>
+          <prop k="name_dd_active" v="1"/>
+          <prop k="name_dd_expression" v="if_not_exists('C:/Users/Martin/Downloads/icons/'+ "class" + '-11.svg', 'C:/Users/Martin/Downloads/icons/empty.svg')"/>
+          <prop k="name_dd_field" v=""/>
+          <prop k="name_dd_useexpr" v="1"/>
+          <prop k="offset" v="0,0"/>
+          <prop k="offset_map_unit_scale" v="0,0,0,0,0,0"/>
+          <prop k="offset_unit" v="MM"/>
+          <prop k="outline_color" v="0,0,0,255"/>
+          <prop k="outline_width" v="0"/>
+          <prop k="outline_width_map_unit_scale" v="0,0,0,0,0,0"/>
+          <prop k="outline_width_unit" v="MM"/>
+          <prop k="scale_method" v="diameter"/>
+          <prop k="size" v="11"/>
+          <prop k="size_map_unit_scale" v="0,0,0,0,0,0"/>
+          <prop k="size_unit" v="Pixel"/>
+          <prop k="vertical_anchor_point" v="1"/>
+        </layer>
+      </symbol>
+    </symbols>
+    <rotation/>
+    <sizescale scalemethod="diameter"/>
+  </renderer-v2>
+    """
+
+
 def _get_line_symbol(index, style):
     color = _get_value_safe(style, "line-color")
     width = _get_value_safe(style, "line-width", 1)
@@ -253,14 +288,14 @@ def _get_rule(index, style, rule_content):
     min_denom_value = _get_value_safe(style, "min_scale_denom")
 
     if style["zoom_level"]:
-        if not max_denom_value:
+        if max_denom_value is None:
             raise RuntimeError("max denom missing: {}".format(style))
-        assert max_denom_value
-        assert min_denom_value
+        assert max_denom_value is not None
+        assert min_denom_value is not None
 
-    if max_denom_value:
+    if max_denom_value is not None:
         max_denom = ' scalemaxdenom="{}"'.format(max_denom_value)
-    if min_denom_value:
+    if min_denom_value is not None:
         min_denom = ' scalemindenom="{}"'.format(min_denom_value)
 
     rule = """<rule key="$key$" {filter} symbol="{symbol}"{max_denom}{min_denom} label="{label}" description="{label}">
