@@ -7,14 +7,27 @@ from xml.sax.saxutils import escape
 from xml_helper import create_style_file
 
 
-def generate_qgis_styles(mapbox_gl_style_path):
-    if not os.path.isfile(mapbox_gl_style_path):
-        raise RuntimeError("File does not exist: {}".format(mapbox_gl_style_path))
-    with open(mapbox_gl_style_path, 'r') as f:
-        js = json.load(f)
+def generate_styles(text, output_directory):
+    """
+     * Creates and exports the styles
+    :param text:
+    :param output_directory:
+    :return:
+    """
 
+    styles = process(text)
+    write_styles(styles_by_target_layer=styles, output_directory=output_directory)
+
+
+def process(text):
+    """
+     * Creates the style definitions and returns them mapped by filename
+    :param text:
+    :return:
+    """
+
+    js = json.loads(text)
     layers = js["layers"]
-
     styles_by_file_name = {}
     for l in layers:
         if "source-layer" in l:
