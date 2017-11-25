@@ -135,7 +135,7 @@ def _get_labeling_settings(style):
 
 def _get_fill_symbol(index, style):
     opacity = _get_value_safe(style, "fill-opacity", 1)
-    offset = map(lambda o: str(o), _get_value_safe(style, "fill-translate", default=[0, 0]))
+    offset = list(map(lambda o: str(o), _get_value_safe(style, "fill-translate", default=[0, 0])))
     offset = ",".join(offset)
     fill_color_rgba = _get_value_safe(style, "fill-color", "")
     fill_outline_color_rgba = _get_value_safe(style, "fill-outline-color", fill_color_rgba)

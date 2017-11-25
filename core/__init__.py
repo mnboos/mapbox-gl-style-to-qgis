@@ -4,7 +4,7 @@ import copy
 import colorsys
 from itertools import groupby
 from xml.sax.saxutils import escape
-from xml_helper import create_style_file
+from .xml_helper import create_style_file
 
 
 def generate_styles(text, output_directory):
@@ -260,10 +260,10 @@ def parse_color(color):
     if color.startswith("#"):
         color = color.replace("#", "")
         if len(color) == 3:
-            color = "".join(map(lambda c: c+c, color))
+            color = "".join(list(map(lambda c: c+c, color)))
         elif len(color) == 6:
             return "#" + color
-        return ",".join(map(lambda v: str(int(v)), bytearray.fromhex(color)))
+        return ",".join(list(map(lambda v: str(int(v)), bytearray.fromhex(color))))
     else:
         return _get_color_string(color)
 
@@ -274,7 +274,7 @@ def _get_color_string(color):
     is_hsl = color.startswith("hsl")
     colors = color.replace("hsla(", "").replace("hsl(", "").replace("rgba(", "").replace("rgb(", "").replace(")", "")\
         .replace(" ", "").replace("%", "").split(",")
-    colors = map(lambda c: float(c), colors)
+    colors = list(map(lambda c: float(c), colors))
     a = 1
     if has_alpha:
         a = colors[3]
@@ -283,13 +283,13 @@ def _get_color_string(color):
         s = colors[1] / 100.0
         l = colors[2] / 100.0
         r, g, b = colorsys.hls_to_rgb(h, l, s)
-        return ",".join(map(lambda c: str(int(round(255.0 * c))), [r, g, b, a]))
+        return ",".join(list(map(lambda c: str(int(round(255.0 * c))), [r, g, b, a])))
     else:
         r = colors[0]
         g = colors[1]
         b = colors[2]
         a = round(255.0*a)
-        return ",".join(map(lambda c: str(int(c)), [r, g, b, a]))
+        return ",".join(list(map(lambda c: str(int(c)), [r, g, b, a])))
 
 
 def _apply_scale_range(styles):
@@ -395,10 +395,10 @@ def get_qgis_rule(mb_filter, escape_result=True, depth=0):
     elif op in _combining_operators:
         is_none = op == "none"
         all_exprs = map(lambda f: get_qgis_rule(f, escape_result=False, depth=depth+1), mb_filter[1:])
-        all_exprs = filter(lambda e: e is not None, all_exprs)
+        all_exprs = list(filter(lambda e: e is not None, all_exprs))
         comb_op = _combining_operators[op]
         if comb_op == "and" and len(all_exprs) > 1:
-            all_exprs = map(lambda e: "({})".format(e), all_exprs)
+            all_exprs = list(map(lambda e: "({})".format(e), all_exprs))
         full_expr = " {} ".format(comb_op).join(all_exprs)
 
         if is_none:
@@ -444,7 +444,7 @@ def _get_membership_expr(mb_filter):
     assert len(mb_filter) >= 3
     what = "\"{}\"".format(mb_filter[1])
     op = _membership_operators[mb_filter[0]]
-    collection = "({})".format(", ".join(map(lambda e: "'{}'".format(e), mb_filter[2:])))
+    collection = "({})".format(", ".join(list(map(lambda e: "'{}'".format(e), mb_filter[2:]))))
     is_not = mb_filter[0].startswith("!")
     if is_not:
         null_str = "is null or"
