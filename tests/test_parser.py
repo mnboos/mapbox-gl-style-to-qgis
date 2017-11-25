@@ -35,4 +35,4 @@ def test_filter():
     styles = style_obj["landuse_overlay.polygon.qml"]["styles"]
     assert len(styles) == 1
     assert "rule" in styles[0]
-    assert unescape(styles[0]["rule"], entities={"&quot;": '"'}) == "\"class\" = \'national_park\'"
+    assert unescape(styles[0]["rule"], entities={"&quot;": '"'}) == "\"class\" is not null and \"class\" = \'national_park\'"

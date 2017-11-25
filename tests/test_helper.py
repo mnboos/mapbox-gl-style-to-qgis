@@ -94,7 +94,7 @@ def test_zoom_level_zero():
         }
       })
     styles = get_styles(style)
-    assert len(styles) == 3
+    assert len(styles) == 2
     assert _are_dicts_equal(styles[0], {
         'zoom_level': 0,
         'max_scale_denom': 1000000000,
@@ -106,7 +106,7 @@ def test_zoom_level_zero():
     assert _are_dicts_equal(styles[1], {
         'zoom_level': 10,
         'max_scale_denom': 750000,
-        'min_scale_denom': 100,
+        'min_scale_denom': 1,
         'fill-color': '0,0,0,0',
         'fill-opacity': 0.3
     })
@@ -182,12 +182,8 @@ def test_scale():
         }
       })
     styles = get_styles(style)
-    assert len(styles) == 3
-    assert styles[0]["zoom_level"] == 0
-    assert styles[0]["line-width"] == 0
-    assert styles[1]["zoom_level"] == 10
-    assert styles[2]["zoom_level"] == 15
-    assert styles[2]["line-width"] == 1
+    assert len(styles) == 1
+    assert styles[0]["zoom_level"] == 10
 
 
 def test_get_styles():
@@ -209,9 +205,9 @@ def test_get_styles():
         }
       })
     styles = get_styles(style)
-    assert len(styles) == 4
+    assert len(styles) == 2
     styles = sorted(styles, key=lambda s: s["zoom_level"])
-    assert _are_dicts_equal(styles[1], {
+    assert _are_dicts_equal(styles[0], {
         'fill-outline-color': '#dfdbd7',
         'fill-color': '#f2eae2',
         'zoom_level': 13,
@@ -219,13 +215,13 @@ def test_get_styles():
         'max_scale_denom': 100000,
         'min_scale_denom': 12500
     })
-    assert _are_dicts_equal(styles[2], {
+    assert _are_dicts_equal(styles[1], {
         'fill-outline-color': '#dfdbd7',
         'fill-color': '#f2eae2',
         'zoom_level': 16,
         'fill-opacity': 1,
         'max_scale_denom': 12500,
-        'min_scale_denom': 100
+        'min_scale_denom': 1
     })
 
 
