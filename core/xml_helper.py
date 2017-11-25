@@ -16,8 +16,6 @@ _cap_styles = {
 }
 
 
-# todo: use scale expressions: coalesce(scale_exp(@map_scale, 750, 1500000, 18, 0.5, 1.2), 0)
-
 def create_style_file(output_directory, layer_style):
     with open(os.path.join(os.path.dirname(__file__), "data/qml_template.xml"), 'r') as f:
         template = f.read()
