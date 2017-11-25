@@ -15,7 +15,6 @@ def register_qgis_expressions():
         QgsExpression.registerFunction(qgis_functions.if_not_exists)
         QgsExpression.registerFunction(qgis_functions.interpolate_exp)
     except ImportError:
-        print("registering functions failed")
         pass
 
 
