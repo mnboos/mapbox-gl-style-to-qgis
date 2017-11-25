@@ -83,6 +83,8 @@ def _add_default_transparency_styles(style_dict):
 
 
 def write_styles(styles_by_target_layer, output_directory):
+    if not os.path.isdir(output_directory):
+        os.makedirs(output_directory)
     for layer_name in styles_by_target_layer:
         style = styles_by_target_layer[layer_name]
         create_style_file(output_directory=output_directory, layer_style=style)

@@ -72,7 +72,7 @@ def create_style_file(output_directory, layer_style):
                                layer_transparency=layer_transparency)
     file_path = os.path.join(output_directory, layer_style["file_name"])
     if not os.path.isdir(output_directory):
-        os.mkdir(output_directory)
+        os.makedirs(output_directory)
 
     with open(file_path, 'w') as f:
         f.write(template)
