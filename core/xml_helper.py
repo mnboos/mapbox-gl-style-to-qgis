@@ -161,7 +161,7 @@ def _get_fill_symbol(index, style, icons_directory):
 
 
 def _get_fill_pattern_symbol_xml(pattern, label, index, opacity, rendering_pass, icons_directory):
-    svg_path = os.path.join(icons_directory, "{}.svg".format(pattern))
+    svg_path = "'" + os.path.join(icons_directory, "'+{}+'.svg'".format(pattern)).replace("\\", "\\\\")
     return """<!-- {description} -->
           <symbol alpha="{opacity}" clip_to_extent="1" type="fill" name="{index}">
         <layer pass="{rendering_pass}" class="SVGFill" locked="0">
@@ -173,11 +173,11 @@ def _get_fill_pattern_symbol_xml(pattern, label, index, opacity, rendering_pass,
           <prop k="outline_width_unit" v="Pixel"/>
           <prop k="pattern_width_map_unit_scale" v="0,0,0,0,0,0"/>
           <prop k="pattern_width_unit" v="Pixel"/>
-          <prop k="svgFile" v="{svg_path}"/>
-          <prop k="svgFile_dd_active" v="0"/>
-          <prop k="svgFile_dd_expression" v=""/>
+          <prop k="svgFile" v=""/>
+          <prop k="svgFile_dd_expression" v="{svg_path}"/>
+          <prop k="svgFile_dd_active" v="1"/>
           <prop k="svgFile_dd_field" v=""/>
-          <prop k="svgFile_dd_useexpr" v="0"/>
+          <prop k="svgFile_dd_useexpr" v="1"/>
           <prop k="svg_outline_width_map_unit_scale" v="0,0,0,0,0,0"/>
           <prop k="svg_outline_width_unit" v="MM"/>
           <prop k="width" v="17"/>
