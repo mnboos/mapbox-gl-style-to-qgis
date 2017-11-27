@@ -1,4 +1,4 @@
-from core import get_styles, parse_color, get_qgis_rule
+from core import get_styles, parse_color, get_qgis_rule, get_background_color
 
 
 def test_parse_rgb():
@@ -125,6 +125,18 @@ def test_get_styles_float():
         "min_scale_denom": None,
         "max_scale_denom": None
     }
+
+
+def test_get_background_color():
+    layer = """{"layers": [{
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#f8f4f0"
+      }
+    }]}"""
+    color = get_background_color(layer)
+    assert color == "#f8f4f0"
 
 
 def test_get_styles_simple():

@@ -18,6 +18,25 @@ def register_qgis_expressions():
         pass
 
 
+def get_background_color(text):
+    js = json.loads(text)
+    layers = js["layers"]
+    bg_color = None
+    for l in layers:
+        if l["type"] == "background":
+            if "paint" in l:
+                paint = l["paint"]
+                if "background-color" in paint:
+                    bg_color = paint["background-color"]
+                    if bg_color:
+                        bg_color = parse_color(bg_color)
+            break
+    if bg_color and not bg_color.startswith("#"):
+        colors = map(lambda v: int(v), bg_color.split(","))
+        bg_color = "#{0:02x}{1:02x}{2:02x}".format(colors[0], colors[1], colors[2])
+    return bg_color
+
+
 def generate_styles(text, output_directory):
     """
      * Creates and exports the styles
@@ -94,8 +113,12 @@ def _add_default_transparency_styles(style_dict):
 
 
 def write_styles(styles_by_target_layer, output_directory):
-    if not os.path.isdir(output_directory):
-        os.makedirs(output_directory)
+    if os.path.isdir(output_directory):
+        for the_file in os.listdir(output_directory):
+            file_path = os.path.join(output_directory, the_file)
+            if os.path.isfile(file_path) and file_path.lower().endswith(".qml"):
+                os.unlink(file_path)
+
     for layer_name in styles_by_target_layer:
         style = styles_by_target_layer[layer_name]
         create_style_file(output_directory=output_directory, layer_style=style)
