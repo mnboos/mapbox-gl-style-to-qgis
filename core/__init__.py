@@ -4,6 +4,7 @@ import copy
 import colorsys
 import urllib
 import base64
+import shutil
 from itertools import groupby
 from xml.sax.saxutils import escape
 from .xml_helper import create_style_file
@@ -117,6 +118,8 @@ def _create_icons(image_base64, image_definition_data, output_directory):
     icons_directory = os.path.join(output_directory, "icons")
     if not os.path.isdir(icons_directory):
         os.makedirs(icons_directory)
+    src_icon_path = os.path.join(os.path.dirname(__file__), "data", "icons", "empty.svg")
+    shutil.copy2(src_icon_path, icons_directory)
 
     template_path = os.path.join(os.path.dirname(__file__), "data", "svg_template.svg")
     assert os.path.isfile(template_path)
@@ -279,6 +282,7 @@ def get_styles(layer):
         all_values.extend(get_properties_by_zoom(layer, "paint/line-opacity"))
         all_values.extend(get_properties_by_zoom(layer, "paint/line-dasharray"))
     elif layer_type == "symbol":
+        all_values.extend(get_properties_by_zoom(layer, "layout/icon-image", is_expression=True))
         all_values.extend(get_properties_by_zoom(layer, "layout/text-font"))
         all_values.extend(get_properties_by_zoom(layer, "layout/text-size", can_interpolate=True))
         all_values.extend(get_properties_by_zoom(layer, "layout/text-field", is_expression=True, take=1))

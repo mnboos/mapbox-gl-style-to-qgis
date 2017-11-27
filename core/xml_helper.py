@@ -29,16 +29,25 @@ def create_style_file(output_directory, layer_style):
     if "layer-transparency" in layer_style:
         layer_transparency = layer_style["layer-transparency"]
 
+    icons_directory = os.path.join(output_directory, "icons")
     for index, s in enumerate(layer_style["styles"]):
         if layer_type == "line":
             rules.append(_get_rule(index, s, rule_content=""))
             symbols.append(_get_line_symbol(index, s))
         elif layer_type == "fill":
             rules.append(_get_rule(index, s, rule_content=""))
-            symbols.append(_get_fill_symbol(index, s, icons_directory=os.path.join(output_directory, "icons")))
+            symbols.append(_get_fill_symbol(index, s, icons_directory=icons_directory))
         elif layer_type == "symbol":
             labeling_settings = _get_labeling_settings(s)
             labeling_rules.append(_get_rule(index, s, rule_content=labeling_settings))
+            if "icon-image" in s:
+                rules.append(_get_rule(index, s, rule_content=""))
+                icn = _get_icon_symbol(index=index,
+                                       style=s,
+                                       icons_directory=icons_directory,
+                                       icon_expr=s["icon-image"])
+                symbols.append(icn)
+
 
     rule_string = """<rules key="{key}">
     {rules}
@@ -131,6 +140,44 @@ def _get_labeling_settings(style):
                draw_buffer=draw_buffer)
 
 
+def _get_icon_symbol(index, style, icons_directory, icon_expr):
+    opacity = _get_value_safe(style, "fill-opacity", 1)
+    svg_path = "'" + os.path.join(icons_directory, "'+{}+'.svg'".format(icon_expr)).replace("\\", "/")
+    fallback_path = "'" + os.path.join(icons_directory, "empty.svg'").replace("\\", "/")
+    svg_expr = "if_not_exists({svg_path}, {fallback_path})".format(svg_path=svg_path, fallback_path=fallback_path)
+    rendering_pass = _get_value_safe(style, "rendering_pass", 0)
+    return """<!-- {description} -->
+          <symbol alpha="{opacity}" clip_to_extent="1" type="marker" name="{index}">
+        <layer pass="{rendering_pass}" class="SvgMarker" locked="0">
+          <prop k="angle" v="0"/>
+          <prop k="color" v="132,172,217,255"/>
+          <prop k="horizontal_anchor_point" v="1"/>
+          <prop k="name" v=""/>
+          <prop k="name_dd_active" v="1"/>
+          <prop k="name_dd_expression" v="{svg_path}"/>
+          <prop k="name_dd_field" v=""/>
+          <prop k="name_dd_useexpr" v="1"/>
+          <prop k="offset" v="0,0"/>
+          <prop k="offset_map_unit_scale" v="0,0,0,0,0,0"/>
+          <prop k="offset_unit" v="MM"/>
+          <prop k="outline_color" v="0,0,0,255"/>
+          <prop k="outline_width" v="0"/>
+          <prop k="outline_width_map_unit_scale" v="0,0,0,0,0,0"/>
+          <prop k="outline_width_unit" v="MM"/>
+          <prop k="scale_method" v="diameter"/>
+          <prop k="size" v="17"/>
+          <prop k="size_map_unit_scale" v="0,0,0,0,0,0"/>
+          <prop k="size_unit" v="Pixel"/>
+          <prop k="vertical_anchor_point" v="1"/>
+        </layer>
+      </symbol>
+    """.format(description=style["name"],
+               opacity=opacity,
+               svg_path=svg_expr,
+               index=index,
+               rendering_pass=rendering_pass)
+
+
 def _get_fill_symbol(index, style, icons_directory):
     opacity = _get_value_safe(style, "fill-opacity", 1)
     offset = list(map(lambda o: str(o), _get_value_safe(style, "fill-translate", default=[0, 0])))
@@ -139,6 +186,7 @@ def _get_fill_symbol(index, style, icons_directory):
     fill_outline_color_rgba = _get_value_safe(style, "fill-outline-color", fill_color_rgba)
     label = style["name"]
     fill_pattern = _get_value_safe(style, "fill-pattern")
+    rendering_pass = _get_value_safe(style, "rendering_pass", 0)
     if style["zoom_level"] is not None:
         label = "{}-zoom-{}".format(label, style["zoom_level"])
 
@@ -147,7 +195,7 @@ def _get_fill_symbol(index, style, icons_directory):
                                               label=label,
                                               index=index,
                                               opacity=opacity,
-                                              rendering_pass=style["rendering_pass"],
+                                              rendering_pass=rendering_pass,
                                               icons_directory=icons_directory)
     else:
         symbol = _get_fill_symbol_xml(fill_color_rgba=fill_color_rgba,
@@ -156,12 +204,14 @@ def _get_fill_symbol(index, style, icons_directory):
                                       label=label,
                                       offset=offset,
                                       opacity=opacity,
-                                      rendering_pass=style["rendering_pass"])
+                                      rendering_pass=rendering_pass)
     return symbol
 
 
 def _get_fill_pattern_symbol_xml(pattern, label, index, opacity, rendering_pass, icons_directory):
-    svg_path = "'" + os.path.join(icons_directory, "'+{}+'.svg'".format(pattern)).replace("\\", "\\\\")
+    svg_path = "'" + os.path.join(icons_directory, "'+{}+'.svg'".format(pattern)).replace("\\", "/")
+    fallback_path = "'" + os.path.join(icons_directory, "empty.svg'").replace("\\", "/")
+    svg_expr = "if_not_exists({svg_path}, {fallback_path})".format(svg_path=svg_path, fallback_path=fallback_path)
     return """<!-- {description} -->
           <symbol alpha="{opacity}" clip_to_extent="1" type="fill" name="{index}">
         <layer pass="{rendering_pass}" class="SVGFill" locked="0">
@@ -204,7 +254,7 @@ def _get_fill_pattern_symbol_xml(pattern, label, index, opacity, rendering_pass,
       </symbol>""".format(description=label,
                           opacity=opacity,
                           index=index,
-                          svg_path=svg_path,
+                          svg_path=svg_expr,
                           rendering_pass=rendering_pass)
 
 
@@ -233,41 +283,6 @@ def _get_fill_symbol_xml(fill_color_rgba, fill_outline_color_rgba, index, label,
                        description=label,
                        rendering_pass=rendering_pass)
     return symbol
-
-
-def _get_svg_symbol():
-    return """
-      <renderer-v2 forceraster="0" symbollevels="0" type="singleSymbol" enableorderby="0">
-    <symbols>
-      <symbol alpha="1" clip_to_extent="1" type="marker" name="0">
-        <layer pass="0" class="SvgMarker" locked="0">
-          <prop k="angle" v="0"/>
-          <prop k="color" v="132,172,217,255"/>
-          <prop k="horizontal_anchor_point" v="1"/>
-          <prop k="name" v="./Downloads/method-draw-image.svg"/>
-          <prop k="name_dd_active" v="1"/>
-          <prop k="name_dd_expression" v="if_not_exists('C:/Users/Martin/Downloads/icons/'+ "class" + '-11.svg', 'C:/Users/Martin/Downloads/icons/empty.svg')"/>
-          <prop k="name_dd_field" v=""/>
-          <prop k="name_dd_useexpr" v="1"/>
-          <prop k="offset" v="0,0"/>
-          <prop k="offset_map_unit_scale" v="0,0,0,0,0,0"/>
-          <prop k="offset_unit" v="MM"/>
-          <prop k="outline_color" v="0,0,0,255"/>
-          <prop k="outline_width" v="0"/>
-          <prop k="outline_width_map_unit_scale" v="0,0,0,0,0,0"/>
-          <prop k="outline_width_unit" v="MM"/>
-          <prop k="scale_method" v="diameter"/>
-          <prop k="size" v="11"/>
-          <prop k="size_map_unit_scale" v="0,0,0,0,0,0"/>
-          <prop k="size_unit" v="Pixel"/>
-          <prop k="vertical_anchor_point" v="1"/>
-        </layer>
-      </symbol>
-    </symbols>
-    <rotation/>
-    <sizescale scalemethod="diameter"/>
-  </renderer-v2>
-    """
 
 
 def _get_line_symbol(index, style):
