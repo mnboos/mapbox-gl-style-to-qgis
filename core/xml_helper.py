@@ -35,7 +35,7 @@ def create_style_file(output_directory, layer_style):
             symbols.append(_get_line_symbol(index, s))
         elif layer_type == "fill":
             rules.append(_get_rule(index, s, rule_content=""))
-            symbols.append(_get_fill_symbol(index, s))
+            symbols.append(_get_fill_symbol(index, s, icons_directory=os.path.join(output_directory, "icons")))
         elif layer_type == "symbol":
             labeling_settings = _get_labeling_settings(s)
             labeling_rules.append(_get_rule(index, s, rule_content=labeling_settings))
@@ -131,39 +131,107 @@ def _get_labeling_settings(style):
                draw_buffer=draw_buffer)
 
 
-def _get_fill_symbol(index, style):
+def _get_fill_symbol(index, style, icons_directory):
     opacity = _get_value_safe(style, "fill-opacity", 1)
     offset = list(map(lambda o: str(o), _get_value_safe(style, "fill-translate", default=[0, 0])))
     offset = ",".join(offset)
     fill_color_rgba = _get_value_safe(style, "fill-color", "")
     fill_outline_color_rgba = _get_value_safe(style, "fill-outline-color", fill_color_rgba)
     label = style["name"]
+    fill_pattern = _get_value_safe(style, "fill-pattern")
     if style["zoom_level"] is not None:
         label = "{}-zoom-{}".format(label, style["zoom_level"])
 
-    symbol = """<!-- {description} -->
-    <symbol alpha="{opacity}" clip_to_extent="1" type="fill" name="{index}">
-            <layer pass="{rendering_pass}" class="SimpleFill" locked="0">
-                <prop k="border_width_map_unit_scale" v="0,0,0,0,0,0"/>
-                <prop k="color" v="{fill_color}"/>
-                <prop k="joinstyle" v="bevel"/>
-                <prop k="offset" v="{offset}"/>
-                <prop k="offset_map_unit_scale" v="0,0,0,0,0,0"/>
-                <prop k="offset_unit" v="Pixel"/>
-                <prop k="outline_color" v="{fill_outline_color}"/>
-                <prop k="outline_style" v="solid"/>
-                <prop k="outline_width" v="0.7"/>
-                <prop k="outline_width_unit" v="Pixel"/>
-                <prop k="style" v="solid"/>
+    if fill_pattern:
+        symbol = _get_fill_pattern_symbol_xml(pattern=fill_pattern,
+                                              label=label,
+                                              index=index,
+                                              opacity=opacity,
+                                              rendering_pass=style["rendering_pass"],
+                                              icons_directory=icons_directory)
+    else:
+        symbol = _get_fill_symbol_xml(fill_color_rgba=fill_color_rgba,
+                                      fill_outline_color_rgba=fill_outline_color_rgba,
+                                      index=index,
+                                      label=label,
+                                      offset=offset,
+                                      opacity=opacity,
+                                      rendering_pass=style["rendering_pass"])
+    return symbol
+
+
+def _get_fill_pattern_symbol_xml(pattern, label, index, opacity, rendering_pass, icons_directory):
+    svg_path = os.path.join(icons_directory, "{}.svg".format(pattern))
+    return """<!-- {description} -->
+          <symbol alpha="{opacity}" clip_to_extent="1" type="fill" name="{index}">
+        <layer pass="{rendering_pass}" class="SVGFill" locked="0">
+          <prop k="angle" v="0"/>
+          <prop k="color" v="255,255,255,255"/>
+          <prop k="outline_color" v="0,0,0,255"/>
+          <prop k="outline_width" v="0.2"/>
+          <prop k="outline_width_map_unit_scale" v="0,0,0,0,0,0"/>
+          <prop k="outline_width_unit" v="Pixel"/>
+          <prop k="pattern_width_map_unit_scale" v="0,0,0,0,0,0"/>
+          <prop k="pattern_width_unit" v="Pixel"/>
+          <prop k="svgFile" v="{svg_path}"/>
+          <prop k="svgFile_dd_active" v="0"/>
+          <prop k="svgFile_dd_expression" v=""/>
+          <prop k="svgFile_dd_field" v=""/>
+          <prop k="svgFile_dd_useexpr" v="0"/>
+          <prop k="svg_outline_width_map_unit_scale" v="0,0,0,0,0,0"/>
+          <prop k="svg_outline_width_unit" v="MM"/>
+          <prop k="width" v="17"/>
+          <symbol alpha="0" clip_to_extent="1" type="line" name="@3@0">
+            <layer pass="0" class="SimpleLine" locked="0">
+              <prop k="capstyle" v="square"/>
+              <prop k="customdash" v="5;2"/>
+              <prop k="customdash_map_unit_scale" v="0,0,0,0,0,0"/>
+              <prop k="customdash_unit" v="MM"/>
+              <prop k="draw_inside_polygon" v="0"/>
+              <prop k="joinstyle" v="bevel"/>
+              <prop k="line_color" v="0,0,0,255"/>
+              <prop k="line_style" v="solid"/>
+              <prop k="line_width" v="0"/>
+              <prop k="line_width_unit" v="MM"/>
+              <prop k="offset" v="0"/>
+              <prop k="offset_map_unit_scale" v="0,0,0,0,0,0"/>
+              <prop k="offset_unit" v="MM"/>
+              <prop k="use_custom_dash" v="0"/>
+              <prop k="width_map_unit_scale" v="0,0,0,0,0,0"/>
             </layer>
-        </symbol>
-        """.format(opacity=opacity,
-                   index=index,
-                   fill_color=fill_color_rgba,
-                   fill_outline_color=fill_outline_color_rgba,
-                   offset=offset,
-                   description=label,
-                   rendering_pass=style["rendering_pass"])
+          </symbol>
+        </layer>
+      </symbol>""".format(description=label,
+                          opacity=opacity,
+                          index=index,
+                          svg_path=svg_path,
+                          rendering_pass=rendering_pass)
+
+
+def _get_fill_symbol_xml(fill_color_rgba, fill_outline_color_rgba, index, label, offset, opacity, rendering_pass):
+    symbol = """<!-- {description} -->
+        <symbol alpha="{opacity}" clip_to_extent="1" type="fill" name="{index}">
+                <layer pass="{rendering_pass}" class="SimpleFill" locked="0">
+                    <prop k="border_width_map_unit_scale" v="0,0,0,0,0,0"/>
+                    <prop k="color" v="{fill_color}"/>
+                    <prop k="joinstyle" v="bevel"/>
+                    <prop k="offset" v="{offset}"/>
+                    <prop k="offset_map_unit_scale" v="0,0,0,0,0,0"/>
+                    <prop k="offset_unit" v="Pixel"/>
+                    <prop k="outline_color" v="{fill_outline_color}"/>
+                    <prop k="outline_style" v="solid"/>
+                    <prop k="outline_width" v="0.7"/>
+                    <prop k="outline_width_unit" v="Pixel"/>
+                    <prop k="style" v="solid"/>
+                </layer>
+            </symbol>
+            """.format(opacity=opacity,
+                       index=index,
+                       fill_color=fill_color_rgba,
+                       fill_outline_color=fill_outline_color_rgba,
+                       offset=offset,
+                       description=label,
+                       rendering_pass=rendering_pass)
     return symbol
 
 

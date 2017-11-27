@@ -270,6 +270,7 @@ def get_styles(layer):
         all_values.extend(get_properties_by_zoom(layer, "paint/fill-outline-color", is_color=True))
         all_values.extend(get_properties_by_zoom(layer, "paint/fill-translate"))
         all_values.extend(get_properties_by_zoom(layer, "paint/fill-opacity"))
+        all_values.extend(get_properties_by_zoom(layer, "paint/fill-pattern"))
     elif layer_type == "line":
         all_values.extend(get_properties_by_zoom(layer, "layout/line-join"))
         all_values.extend(get_properties_by_zoom(layer, "layout/line-cap"))
