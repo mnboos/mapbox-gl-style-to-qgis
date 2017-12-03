@@ -19,9 +19,10 @@ def test_icon_creation():
 
 
 def test_generate_qgis():
-    path = os.path.join(os.path.dirname(__file__), "..", "sample_data", "roman_empire.json")
+    # path = os.path.join(os.path.dirname(__file__), "..", "sample_data", "roman_empire.json")
     # path = os.path.join(os.path.dirname(__file__), "..", "sample_data", "osm_bright.json")
-    # path = os.path.join(os.path.dirname(__file__), "..", "sample_data", "klokantech_basic.json")
+    # path = os.path.join(os.path.dirname(__file__), "..", "sample_data", "klokantech_terrain.json")
+    path = os.path.join(os.path.dirname(__file__), "..", "sample_data", "klokantech_basic.json")
     # path = os.path.join(os.path.dirname(__file__), "..", "sample_data", "positron.json")
     data = _load_file(path)
     data = json.loads(data)
@@ -32,9 +33,10 @@ def test_generate_qgis():
 
 
 def test_generate_local():
-    path = os.path.join(os.path.dirname(__file__), "..", "sample_data", "roman_empire.json")
+    # path = os.path.join(os.path.dirname(__file__), "..", "sample_data", "roman_empire.json")
     # path = os.path.join(os.path.dirname(__file__), "..", "sample_data", "osm_bright.json")
-    # path = os.path.join(os.path.dirname(__file__), "..", "sample_data", "klokantech_basic.json")
+    # path = os.path.join(os.path.dirname(__file__), "..", "sample_data", "klokantech_terrain.json")
+    path = os.path.join(os.path.dirname(__file__), "..", "sample_data", "klokantech_basic.json")
     # path = os.path.join(os.path.dirname(__file__), "..", "sample_data", "positron.json")
     data = _load_file(path)
     data = json.loads(data)

@@ -6,8 +6,7 @@ import urllib
 import base64
 import shutil
 from itertools import groupby
-from xml.sax.saxutils import escape
-from .xml_helper import create_style_file
+from .xml_helper import create_style_file, escape_xml
 
 
 def register_qgis_expressions():
@@ -111,7 +110,8 @@ def process(style_json):
 
 def create_icons(style, web_request_executor, output_directory):
     image_data, image_definition_data = _load_sprite_data(style, web_request_executor)
-    _create_icons(image_data, image_definition_data, output_directory)
+    if image_data and image_definition_data:
+        _create_icons(image_data, image_definition_data, output_directory)
 
 
 def _create_icons(image_base64, image_definition_data, output_directory):
@@ -156,6 +156,7 @@ def _load_sprite_data(style, web_request_executor):
         else:
             image_definition_data = json.loads(str(image_definition_data))
         return image_data, image_definition_data
+    return None, None
 
 
 def _execute_get_request(url):
@@ -284,6 +285,7 @@ def get_styles(layer):
     elif layer_type == "symbol":
         all_values.extend(get_properties_by_zoom(layer, "layout/icon-image", is_expression=True))
         all_values.extend(get_properties_by_zoom(layer, "layout/text-font"))
+        all_values.extend(get_properties_by_zoom(layer, "layout/text-transform"))
         all_values.extend(get_properties_by_zoom(layer, "layout/text-size", can_interpolate=True))
         all_values.extend(get_properties_by_zoom(layer, "layout/text-field", is_expression=True, take=1))
         all_values.extend(get_properties_by_zoom(layer, "layout/text-max-width"))
@@ -348,9 +350,9 @@ def _parse_expr(expr, take=None):
 
 def _map_value_to_qgis_expr(val):
     if val["is_expr"]:
-        return '"{}"'.format(val["text"])
+        return '"{}"'.format(val["text"].encode("utf-8"))
     else:
-        return "'{}'".format(val["text"])
+        return "'{}'".format(val["text"].encode("utf-8"))
 
 
 def _get_qgis_fields(expr):
@@ -383,15 +385,11 @@ def _get_qgis_fields(expr):
     return mapped
 
 
-def escape_xml(value):
-    return escape(value, entities={'"': "&quot;"})
-
-
 def _get_field_expr(index, field):
     if index > 0:
-        return "if({field} is null, '', '\\n' + {field})".format(field=field)
+        return "if({field} is null, '', '\\n' + {field})".format(field=field.encode("utf-8"))
     else:
-        return "if({field} is null, '', {field})".format(field=field)
+        return "if({field} is null, '', {field})".format(field=field.encode("utf-8"))
 
 
 def parse_color(color):

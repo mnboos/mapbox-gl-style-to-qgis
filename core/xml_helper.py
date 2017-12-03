@@ -1,5 +1,6 @@
 import os
 import uuid
+from xml.sax.saxutils import escape
 
 _join_styles = {
     None: "round",
@@ -86,12 +87,26 @@ def create_style_file(output_directory, layer_style):
         f.write(template)
 
 
+def escape_xml(value):
+    return escape(value, entities={'"': "&quot;"})
+
+
 def _get_labeling_settings(style):
     field_name = _get_value_safe(style, "text-field")
     if not field_name:
         return None
 
     font = _get_value_safe(style, "text-font", ["Arial"])
+    text_transform = _get_value_safe(style, "text-transform", "").lower()
+    if text_transform:
+        if text_transform == "uppercase":
+            text_transform = "upper"
+        elif text_transform == "lowercase":
+            text_transform = "lower"
+        else:
+            raise ValueError("Unknown text_transform '{}'".format(text_transform))
+        field_name = '{transform}({field})'.format(transform=text_transform, field=field_name)
+
     if isinstance(font, list):
         font = font[0]
     font = "MS Shell Dlg 2"
@@ -126,7 +141,7 @@ def _get_labeling_settings(style):
         <text-buffer bufferSize="{buffer_size}" bufferSizeMapUnitScale="0,0,0,0,0,0" bufferColor="{buffer_color}" bufferDraw="{draw_buffer}" bufferBlendMode="0" bufferTransp="0" bufferSizeInMapUnits="1" bufferNoFill="0" bufferJoinStyle="128"/>
         <background shapeSizeUnits="1" shapeType="0" shapeSVGFile="" shapeOffsetX="0" shapeOffsetY="0" shapeBlendMode="0" shapeFillColor="255,255,255,255" shapeTransparency="0" shapeSizeMapUnitScale="0,0,0,0,0,0" shapeSizeType="0" shapeJoinStyle="64" shapeDraw="0" shapeBorderWidthUnits="1" shapeSizeX="0" shapeSizeY="0" shapeOffsetMapUnitScale="0,0,0,0,0,0" shapeRadiiX="0" shapeRadiiY="0" shapeOffsetUnits="1" shapeRotation="0" shapeBorderWidth="0" shapeBorderColor="128,128,128,255" shapeRotationType="0" shapeBorderWidthMapUnitScale="0,0,0,0,0,0" shapeRadiiMapUnitScale="0,0,0,0,0,0" shapeRadiiUnits="1"/>
         <shadow shadowOffsetMapUnitScale="0,0,0,0,0,0" shadowOffsetGlobal="1" shadowRadiusUnits="1" shadowTransparency="30" shadowColor="0,0,0,255" shadowUnder="0" shadowScale="100" shadowOffsetDist="1" shadowDraw="0" shadowOffsetAngle="135" shadowRadius="1.5" shadowRadiusMapUnitScale="0,0,0,0,0,0" shadowBlendMode="6" shadowRadiusAlphaOnly="0" shadowOffsetUnits="1"/>
-        <placement repeatDistanceUnit="1" placement="2" maxCurvedCharAngleIn="25" repeatDistance="0" distInMapUnits="0" labelOffsetInMapUnits="1" xOffset="0" distMapUnitScale="0,0,0,0,0,0" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" preserveRotation="1" repeatDistanceMapUnitScale="0,0,0,0,0,0" centroidWhole="0" priority="5" yOffset="0" offsetType="0" placementFlags="9" centroidInside="0" dist="0" angleOffset="0" maxCurvedCharAngleOut="-25" fitInPolygonOnly="0" quadOffset="4" labelOffsetMapUnitScale="0,0,0,0,0,0"/>
+        <placement repeatDistanceUnit="1" placement="3" maxCurvedCharAngleIn="25" repeatDistance="0" distInMapUnits="0" labelOffsetInMapUnits="1" xOffset="0" distMapUnitScale="0,0,0,0,0,0" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" preserveRotation="1" repeatDistanceMapUnitScale="0,0,0,0,0,0" centroidWhole="0" priority="5" yOffset="0" offsetType="0" placementFlags="9" centroidInside="0" dist="0" angleOffset="0" maxCurvedCharAngleOut="-25" fitInPolygonOnly="0" quadOffset="4" labelOffsetMapUnitScale="0,0,0,0,0,0"/>
         <rendering fontMinPixelSize="3" scaleMax="10000000" fontMaxPixelSize="10000" scaleMin="1" upsidedownLabels="0" limitNumLabels="0" obstacle="1" obstacleFactor="1" scaleVisibility="0" fontLimitPixelSize="0" mergeLines="1" obstacleType="0" labelPerPart="0" zIndex="0" maxNumLabels="2000" displayAll="0" minFeatureSize="0"/>
         <data-defined>
             <Size expr="{font_size_expr}" field="" active="{font_size_expr_active}" useExpr="{font_size_expr_active}"/>
