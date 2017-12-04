@@ -1,4 +1,4 @@
-from core import get_styles, parse_color, get_qgis_rule, get_background_color
+from core import get_styles, parse_color, get_qgis_rule, get_background_color, xml_helper
 
 
 def test_parse_rgb():
@@ -58,6 +58,21 @@ def test_line_dasharray():
         }
       })
     styles = get_styles(style)
+
+
+def test_line_dasharray_multiple():
+    layer = _get_line_layer({
+        "id": "test",
+        "line-dasharray": [
+            5,
+            6,
+            10,
+            11
+        ]
+      })
+    styles = get_styles(layer)
+    d = xml_helper._get_line_symbol(0, styles[0])
+    a = ""
 
 
 def test_line_cap():

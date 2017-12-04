@@ -20,13 +20,13 @@ def test_icon_creation():
 
 def test_generate_qgis():
     # path = os.path.join(os.path.dirname(__file__), "..", "sample_data", "roman_empire.json")
-    # path = os.path.join(os.path.dirname(__file__), "..", "sample_data", "osm_bright.json")
+    path = os.path.join(os.path.dirname(__file__), "..", "sample_data", "osm_bright.json")
     # path = os.path.join(os.path.dirname(__file__), "..", "sample_data", "klokantech_terrain.json")
-    path = os.path.join(os.path.dirname(__file__), "..", "sample_data", "klokantech_basic.json")
+    # path = os.path.join(os.path.dirname(__file__), "..", "sample_data", "klokantech_basic.json")
     # path = os.path.join(os.path.dirname(__file__), "..", "sample_data", "positron.json")
     data = _load_file(path)
     data = json.loads(data)
-    output_directory = r"C:\Users\Martin\AppData\Local\Temp\vector_tiles_reader\styles\roman-empire.mbtiles"
+    output_directory = r"C:\Users\Martin\AppData\Local\Temp\vector_tiles_reader\styles\OpenMapTiles.com (with custom key)"
     if os.path.isdir(output_directory):
         shutil.rmtree(output_directory)
     generate_styles(data, output_directory)
