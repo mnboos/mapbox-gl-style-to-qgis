@@ -10,14 +10,11 @@ from .xml_helper import create_style_file, escape_xml
 
 
 def register_qgis_expressions():
-    try:
-        from qgis.core import QgsExpression
-        from .data import qgis_functions
-        QgsExpression.registerFunction(qgis_functions.get_zoom_for_scale)
-        QgsExpression.registerFunction(qgis_functions.if_not_exists)
-        QgsExpression.registerFunction(qgis_functions.interpolate_exp)
-    except ImportError:
-        pass
+    from qgis.core import QgsExpression
+    from .data import qgis_functions
+    QgsExpression.registerFunction(qgis_functions.get_zoom_for_scale)
+    QgsExpression.registerFunction(qgis_functions.if_not_exists)
+    QgsExpression.registerFunction(qgis_functions.interpolate_exp)
 
 
 def get_background_color(text):
