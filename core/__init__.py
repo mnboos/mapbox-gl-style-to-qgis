@@ -52,6 +52,28 @@ def generate_styles(style_json, output_directory, web_request_executor=None):
     create_icons(style=style_json, web_request_executor=web_request_executor, output_directory=output_directory)
 
 
+def _get_source_layer(layer, all_layers):
+    """
+     * Recursivly finds the properties 'source-layer' and 'type' of the specified layer.
+     * Layers can reference each other with the 'ref' property, in which case the properties are located on the
+       referenced layer.
+    :param layer:
+    :param all_layers:
+    :return:
+    """
+
+    source_layer = _get_value_safe(layer, "source-layer")
+    layer_type = _get_value_safe(layer, "type")
+    if not source_layer:
+        ref = _get_value_safe(layer, "ref")
+        if ref:
+            matching_layers = filter(lambda l: _get_value_safe(l, "id") == ref, all_layers)
+            if matching_layers:
+                target_layer = matching_layers[0]
+                source_layer, layer_type = _get_source_layer(target_layer, all_layers)
+    return source_layer, layer_type
+
+
 def process(style_json):
     """
      * Creates the style definitions and returns them mapped by filename
@@ -64,9 +86,10 @@ def process(style_json):
     layers = style_json["layers"]
     styles_by_file_name = {}
     for l in layers:
-        if "source-layer" in l:
-            layer_type = l["type"]
-            source_layer = l["source-layer"]
+        source_layer, layer_type = _get_source_layer(l, layers)
+        if source_layer:
+            l["source-layer"] = source_layer
+            l["type"] = layer_type
             if layer_type == "fill":
                 geo_type_name = ".polygon"
             elif layer_type == "line":
