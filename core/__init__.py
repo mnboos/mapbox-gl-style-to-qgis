@@ -52,9 +52,9 @@ def generate_styles(style_json, output_directory, web_request_executor=None):
     create_icons(style=style_json, web_request_executor=web_request_executor, output_directory=output_directory)
 
 
-def _get_source_layer(layer, all_layers):
+def _apply_source_layer(layer, all_layers):
     """
-     * Recursivly finds the properties 'source-layer' and 'type' of the specified layer.
+     * Recursivly applies all properties except 'paint' from the layer specified by 'ref'.
      * Layers can reference each other with the 'ref' property, in which case the properties are located on the
        referenced layer.
     :param layer:
@@ -62,16 +62,15 @@ def _get_source_layer(layer, all_layers):
     :return:
     """
 
-    source_layer = _get_value_safe(layer, "source-layer")
-    layer_type = _get_value_safe(layer, "type")
-    if not source_layer:
-        ref = _get_value_safe(layer, "ref")
-        if ref:
-            matching_layers = filter(lambda l: _get_value_safe(l, "id") == ref, all_layers)
-            if matching_layers:
-                target_layer = matching_layers[0]
-                source_layer, layer_type = _get_source_layer(target_layer, all_layers)
-    return source_layer, layer_type
+    ref = _get_value_safe(layer, "ref")
+    if ref:
+        matching_layers = filter(lambda l: _get_value_safe(l, "id") == ref, all_layers)
+        if matching_layers:
+            target_layer = matching_layers[0]
+            for prop in target_layer:
+                if prop != "paint":
+                    layer[prop] = target_layer[prop]
+            _apply_source_layer(target_layer, all_layers)
 
 
 def process(style_json):
@@ -86,10 +85,13 @@ def process(style_json):
     layers = style_json["layers"]
     styles_by_file_name = {}
     for l in layers:
-        source_layer, layer_type = _get_source_layer(l, layers)
+        if "ref" in l:
+            _apply_source_layer(l, layers)
+        if "source-layer" not in l:
+            continue
+        source_layer = l["source-layer"]
+        layer_type = l["type"]
         if source_layer:
-            l["source-layer"] = source_layer
-            l["type"] = layer_type
             if layer_type == "fill":
                 geo_type_name = ".polygon"
             elif layer_type == "line":
