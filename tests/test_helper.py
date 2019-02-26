@@ -1,4 +1,4 @@
-from core import get_styles, parse_color, get_qgis_rule, get_background_color, xml_helper
+from core import get_styles, parse_color, get_qgis_rule, get_background_color, xml_helper, _get_match_expr
 
 
 def test_parse_rgb():
@@ -19,6 +19,21 @@ def test_parse_hsl():
 def test_parse_hsla():
     rgba = parse_color("hsla(28, 76%, 67%, 0.5)")
     assert rgba == "235,167,107,128"
+
+
+def test_parse_color_condition():
+    rgba = parse_color([
+        "match",
+        [
+            "get",
+            "type"
+        ],
+        "Air Transport",
+        "#e6e6e6",
+        "Education",
+        "#f7eaca"
+    ])
+    assert rgba == ""
 
 
 def test_parse_hex_alpha():
@@ -257,6 +272,22 @@ def test_filter_depth():
     highway_primary_casing = get_qgis_rule(_highway_primary_casing, escape_result=False)
     highway_primary = get_qgis_rule(_highway_primary, escape_result=False)
     assert highway_primary_casing == highway_primary
+
+
+def test_qgis_rule():
+    r = _get_match_expr(["match", ["get", "type"],
+                         "Air Transport",
+                         "#111111",
+                         "Education",
+                         "#222222",
+                         "Medical Care",
+                         "#333333",
+                         "Road Transport",
+                         "#f7f3ca",
+                         "Water Transport",
+                         "#d8e6f3",
+                         "hsl(55, 74%, 88%)"])
+    assert r == """if ("type" is not null and "type" = 'Air Transport', '#111111', if ("type" is not null and "type" = 'Education', '#222222', if ("type" is not null and "type" = 'Medical Care', '#333333', if ("type" is not null and "type" = 'Road Transport', '#f7f3ca', if ("type" is not null and "type" = 'Water Transport', '#d8e6f3', 'hsl(55, 74%, 88%)')))))"""
 
 
 _highway_primary_casing = [

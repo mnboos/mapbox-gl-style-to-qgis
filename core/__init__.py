@@ -131,6 +131,16 @@ def process(style_json):
 
 
 def create_icons(style, web_request_executor, output_directory):
+    """
+    Loads the sprites defined by sprites.json and sprites.data and extracts the specific items by creating
+    svg icons that clip the defined region (defined in sprites.json) from the sprites.png so that only one icons
+    remains.
+    :param style:
+    :param web_request_executor:
+    :param output_directory:
+    :return:
+    """
+
     image_data, image_definition_data = _load_sprite_data(style, web_request_executor)
     if image_data and image_definition_data:
         _create_icons(image_data, image_definition_data, output_directory)
@@ -203,6 +213,13 @@ def _add_default_transparency_styles(style_dict):
 
 
 def write_styles(styles_by_target_layer, output_directory):
+    """
+    Creates the qml files that can be applied to qgis layers.
+    :param styles_by_target_layer:
+    :param output_directory:
+    :return:
+    """
+
     if os.path.isdir(output_directory):
         for the_file in os.listdir(output_directory):
             file_path = os.path.join(output_directory, the_file)
@@ -215,6 +232,7 @@ def write_styles(styles_by_target_layer, output_directory):
 
 
 _comparision_operators = {
+    "match": "=",
     "==": "=",
     "<=": "<=",
     ">=": ">=",
@@ -377,6 +395,12 @@ def _parse_expr(expr, take=None):
 
 
 def _map_value_to_qgis_expr(val):
+    """
+    Wraps the value either in double quotes if it's an expression or in single quotes if it's a string/value
+    :param val:
+    :return:
+    """
+
     if val["is_expr"]:
         return '"{}"'.format(val["text"].encode("utf-8"))
     else:
@@ -581,6 +605,67 @@ def get_qgis_rule(mb_filter, escape_result=True, depth=0):
         if escape_result:
             result = escape_xml(result)
     return result
+
+
+class If(object):
+    def __init__(self, comparision, if_value, else_if=None):
+        self.comparision = comparision
+        self.if_value = if_value
+        self.else_if = else_if
+
+    def dumps(self):
+        else_dump = '""'
+        if self.else_if:
+            if isinstance(self.else_if, str):
+                else_dump = "'{}'".format(self.else_if)
+            else:
+                assert isinstance(self.else_if, If)
+                else_dump = self.else_if.dumps()
+
+        return "if ({}, {}, {})".format(
+            self.comparision,
+            "'{}'".format(self.if_value),
+            else_dump
+        )
+
+    def __repr__(self):
+        return self.dumps()
+
+
+def _get_match_expr(match):
+    """
+    Implements the expression match
+    See: https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-match
+    :param match:
+    :return:
+    """
+
+    assert isinstance(match, list)
+    assert len(match) >= 4 and divmod(len(match), 2)[1] == 1  # the last value is the fallback
+    assert match[0] in _comparision_operators
+
+    labels = match[2:-1:2]
+    output = match[3::2]
+    fallback = match[-1]
+    labels_with_output = zip(labels, output)
+    op = match[0]
+    attr = match[1][1]
+    root_if = None
+    current_if = None
+
+    for label, output in labels_with_output:
+        expr = _get_comparision_expr([op, attr, label])
+        new_if = If(expr, output)
+        if not root_if:
+            root_if = new_if
+            current_if = root_if
+
+        if current_if != new_if:
+            current_if.else_if = new_if
+            current_if = new_if
+    current_if.else_if = fallback
+
+    return root_if.dumps()
 
 
 def _get_comparision_expr(mb_filter):
