@@ -181,6 +181,9 @@ def _load_sprite_data(style, web_request_executor):
     if "sprite" in style:
         image_url = "{}.png".format(style["sprite"])
         image_definitions_url = "{}.json".format(style["sprite"])
+        if not image_url.startswith("http") or not image_definitions_url.startswith("http"):
+            return None, None
+
         image_data = web_request_executor(image_url)
         image_definition_data = web_request_executor(image_definitions_url)
         if not image_data:
@@ -382,12 +385,25 @@ def get_styles(layer):
 
 def _parse_expr(expr, take=None):
     """
-     * Creates a QGIS expression
+     * Creates a QGIS expression (e.g. '{maki}-11'  becomes '"maki"'+'11'
     :param expr:
     :param take: The nr of fields to take. All if value is None.
                  E.g.: "{name:latin}\n{name:nonlatin}" consists of two fields
     :return:
     """
+    if isinstance(expr, list):
+        op = expr[0]
+        data_expression_operators = ["get", "has", "id", "geometry-type", "properties", "feature-state"]
+        is_data_expression = True if op in data_expression_operators else False
+        if not is_data_expression:
+            return ""
+            raise RuntimeError("Unknown expression: ", expr)
+        else:
+            if op == "get":
+                assert len(expr) == 2
+                return _parse_expr("{}".format(expr[1]))
+            else:
+                raise RuntimeError("Data expression operator not implemented: ", op)
 
     fields = _get_qgis_fields(expr)[:take]
     result = "+".join(fields)
@@ -408,6 +424,11 @@ def _map_value_to_qgis_expr(val):
 
 
 def _get_qgis_fields(expr):
+    if isinstance(expr, list):
+        # todo: what happens here?
+        raise RuntimeError("invalid: ", expr)
+        return []
+
     values = []
     val = None
     is_expr = False
@@ -429,7 +450,8 @@ def _get_qgis_fields(expr):
                 "text": "",
                 "is_expr": is_expr
             }
-
+        if isinstance(s, list):
+            raise RuntimeError("Unknown s: ", expr)
         val["text"] += s
     if val:
         values.append(val)
@@ -447,7 +469,8 @@ def _get_field_expr(index, field):
 def parse_color(color):
     if isinstance(color, list):
         if color[0] != "match":
-            raise RuntimeError("Unknown color: ", color)
+            # raise RuntimeError("Unknown color: ", color)
+            return "255,0,0,0"
         return _get_match_expr(color)
     elif color.startswith("#"):
         color = color.replace("#", "")
