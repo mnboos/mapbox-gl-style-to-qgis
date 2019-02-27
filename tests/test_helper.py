@@ -1,4 +1,4 @@
-from core import get_styles, parse_color, get_qgis_rule, get_background_color, xml_helper
+from core import get_styles, parse_color, get_qgis_rule, get_background_color, xml_helper, _get_match_expr
 
 
 def test_parse_rgb():
@@ -19,6 +19,22 @@ def test_parse_hsl():
 def test_parse_hsla():
     rgba = parse_color("hsla(28, 76%, 67%, 0.5)")
     assert rgba == "235,167,107,128"
+
+
+def test_parse_color_match():
+    rgba = parse_color([
+        "match",
+        [
+            "get",
+            "type"
+        ],
+        "Air Transport",
+        "#e6e6e6",
+        "Education",
+        "#f7eaca",
+        "hsla(28, 76%, 67%, 0.5)"
+    ])
+    assert rgba == """if ("type" is not null and "type" = 'Air Transport', '#e6e6e6', if ("type" is not null and "type" = 'Education', '#f7eaca', '235,167,107,128'))"""
 
 
 def test_parse_hex_alpha():

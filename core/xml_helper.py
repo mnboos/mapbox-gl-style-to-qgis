@@ -50,7 +50,6 @@ def create_style_file(output_directory, layer_style):
                                        icon_expr=s["icon-image"])
                 symbols.append(icn)
 
-
     rule_string = """<rules key="{key}">
     {rules}
     </rules>""".format(key=str(uuid.uuid4()), rules="\n".join(rules))
